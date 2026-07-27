@@ -2,6 +2,14 @@ import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../../state/useStore'
 import '../../styles/gameMenu.css'
 
+function formatDisplayName(wallet, username) {
+  if (username && typeof username === 'string' && username.trim().length > 0) return username.trim()
+  if (!wallet || wallet.toLowerCase() === 'anonymous') return 'ANONYMOUS PILOT'
+  if (wallet.includes('@')) return wallet.split('@')[0]
+  if (wallet.length <= 10) return wallet
+  return `${wallet.slice(0, 4)}...${wallet.slice(-3)}`
+}
+
 export default function AnimatedLeaderboard({ limit = 20, compact = false }) {
   const storeLeaderboard = useStore(s => s.leaderboard)
   const leaderboard = storeLeaderboard || []
@@ -74,7 +82,7 @@ export default function AnimatedLeaderboard({ limit = 20, compact = false }) {
                     <span className="leaderboard__climb-badge">▲ +{delta}</span>
                   )}
                 </div>
-                <span className="leaderboard__wallet">{shortAddr(entry.wallet)}</span>
+                <span className="leaderboard__wallet">{formatDisplayName(entry.wallet, entry.username)}</span>
                 <span className="leaderboard__score">{entry.score.toFixed(0)}</span>
               </div>
             )

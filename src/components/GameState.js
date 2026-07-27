@@ -21,6 +21,7 @@ export default function GameState() {
 
   const level = useStore(s => s.level)
   const walletAddress = useStore(s => s.walletAddress)
+  const username = useStore(s => s.username)
 
   const lastTickTimeRef = useRef(0)
   const sessionStartedRef = useRef(false)
@@ -39,18 +40,18 @@ export default function GameState() {
     if (gameStarted && !gameOver && !sessionStartedRef.current) {
       mutation.desiredSpeed = INITIAL_GAME_SPEED
       sessionStartedRef.current = true
-      leaderboardService.startSession(walletAddress)
+      leaderboardService.startSession(walletAddress, username)
     }
-  }, [gameStarted, gameOver, walletAddress])
+  }, [gameStarted, gameOver, walletAddress, username])
 
   // Handle Game Over Score Submission
   useEffect(() => {
     if (gameOver && sessionStartedRef.current) {
       sessionStartedRef.current = false
       const finalScore = Math.max(0, mutation.score)
-      leaderboardService.submitScore(finalScore, walletAddress)
+      leaderboardService.submitScore(finalScore, walletAddress, username)
     }
-  }, [gameOver, walletAddress])
+  }, [gameOver, walletAddress, username])
 
   useFrame((state, delta) => {
     // acceleration logic

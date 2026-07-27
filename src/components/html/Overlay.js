@@ -22,11 +22,18 @@ const Overlay = () => {
   const steeringSensitivity = useStore(s => s.steeringSensitivity)
   const setSteeringSensitivity = useStore(s => s.setSteeringSensitivity)
 
-  const { primaryWallet, handleLogOut } = useDynamicContext()
+  const { primaryWallet, user, handleLogOut } = useDynamicContext()
 
   useEffect(() => {
-    useStore.getState().setWalletAddress(primaryWallet?.address || null)
-  }, [primaryWallet?.address])
+    const emailStr = user?.email || user?.verifiedCredentials?.find(c => c.format === 'email')?.address
+    const emailPrefix = emailStr ? emailStr.split('@')[0] : null
+    const alias = user?.username || emailPrefix || user?.alias
+
+    const identifier = primaryWallet?.address || emailStr || user?.userId || null
+
+    useStore.getState().setWalletAddress(identifier)
+    useStore.getState().setUsername(alias || null)
+  }, [primaryWallet?.address, user])
 
   useEffect(() => {
     if (gameStarted || gameOver) {

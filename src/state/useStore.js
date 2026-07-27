@@ -36,6 +36,7 @@ const useStore = create(subscribeWithSelector((set, get) => {
 
     // Leaderboard & Wallet state
     walletAddress: null,
+    username: null,
     sessionId: null,
     leaderboard: [],
     currentWeek: '',
@@ -44,6 +45,7 @@ const useStore = create(subscribeWithSelector((set, get) => {
     submissionValid: true,
 
     setWalletAddress: (addr) => set({ walletAddress: addr }),
+    setUsername: (name) => set({ username: name }),
     setSessionId: (id) => set({ sessionId: id }),
     setLeaderboard: (leaderboard, week) => set({ leaderboard, currentWeek: week }),
     setUserRank: (rank, score, valid = true) => set({ userRank: rank, userHighScore: score, submissionValid: valid }),
