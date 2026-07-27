@@ -3,20 +3,21 @@ import { useStore } from '../../state/useStore'
 import '../../styles/gameMenu.css'
 
 export default function AnimatedLeaderboard({ limit = 5, compact = false }) {
-  const leaderboard = useStore(s => s.leaderboard) || []
+  const storeLeaderboard = useStore(s => s.leaderboard)
+  const leaderboard = storeLeaderboard || []
   const userRank = useStore(s => s.userRank)
   const prevRanksRef = useRef(new Map())
   const [climbingWallets, setClimbingWallets] = useState(new Set())
   const [rankDeltas, setRankDeltas] = useState(new Map())
 
   useEffect(() => {
-    if (!leaderboard.length) return
+    if (!storeLeaderboard || !storeLeaderboard.length) return
 
     const newClimbing = new Set()
     const newDeltas = new Map()
     const currentRanks = new Map()
 
-    leaderboard.forEach(entry => {
+    storeLeaderboard.forEach(entry => {
       currentRanks.set(entry.wallet, entry.rank)
       const prevRank = prevRanksRef.current.get(entry.wallet)
 
@@ -40,7 +41,8 @@ export default function AnimatedLeaderboard({ limit = 5, compact = false }) {
       }, 2500)
       return () => clearTimeout(timer)
     }
-  }, [leaderboard])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storeLeaderboard])
 
   const shortAddr = (addr) => (addr && addr.length > 8 ? `${addr.slice(0, 4)}...${addr.slice(-4)}` : (addr || 'Anonymous'))
 
