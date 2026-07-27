@@ -74,6 +74,19 @@ class LeaderboardService {
             console.warn('[Leaderboard] Backend error:', msg.message)
             break
 
+          case ServerMessageType.USERNAME_UPDATED:
+            if (msg.success) {
+              console.log('[Leaderboard] Username updated successfully:', msg.message)
+              localStorage.setItem('rocket_rush_custom_username', this.pendingUsername)
+            } else {
+              console.warn('[Leaderboard] Username update failed:', msg.message)
+              useStore.getState().setUsername(this.previousUsername)
+            }
+            this.pendingUsername = null
+            this.previousUsername = null
+            useStore.getState().setUsernameUpdateResult(msg.success, msg.message)
+            break
+
           default:
             break
         }
@@ -181,6 +194,8 @@ class LeaderboardService {
     }
     const cleanName = username ? username.trim() : ''
     if (!cleanName) return
+    this.pendingUsername = cleanName
+    this.previousUsername = localStorage.getItem('rocket_rush_custom_username') || null
     const bytes = encodeClientMessage({
       type: ClientMessageType.UPDATE_USERNAME,
       wallet: wallet || useStore.getState().walletAddress || getGuestId(),
@@ -190,7 +205,22 @@ class LeaderboardService {
       this.ws.send(bytes)
     }
     useStore.getState().setUsername(cleanName)
-    localStorage.setItem('rocket_rush_custom_username', cleanName)
+  }
+
+  mergeGuestScores(fromWallet, toWallet) {
+    if (!fromWallet || !toWallet || fromWallet === toWallet) return
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      this.connect()
+    }
+    console.log(`[Leaderboard] Merging guest scores from ${fromWallet} -> ${toWallet}`)
+    const bytes = encodeClientMessage({
+      type: ClientMessageType.MERGE_GUEST,
+      fromWallet,
+      toWallet
+    })
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(bytes)
+    }
   }
 }
 

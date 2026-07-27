@@ -26,11 +26,21 @@ const Overlay = () => {
 
   const [isEditingName, setIsEditingName] = useState(false)
   const [nameInput, setNameInput] = useState('')
+  const [usernameMsg, setUsernameMsg] = useState(null)
 
   const currentUsername = useStore(s => s.username)
   const walletAddress = useStore(s => s.walletAddress)
+  const usernameUpdateResult = useStore(s => s.usernameUpdateResult)
 
   const { primaryWallet, handleLogOut } = useDynamicContext()
+
+  useEffect(() => {
+    if (usernameUpdateResult) {
+      setUsernameMsg(usernameUpdateResult.message)
+      const timer = setTimeout(() => setUsernameMsg(null), 4000)
+      return () => clearTimeout(timer)
+    }
+  }, [usernameUpdateResult])
 
   useEffect(() => {
     var guestId = window.localStorage.getItem('rocket_rush_guest_id')
@@ -42,7 +52,14 @@ const Overlay = () => {
     var primaryAddress = primaryWallet && primaryWallet.address
     var identifier = primaryAddress || guestId
 
+    const previousWallet = useStore.getState().walletAddress
+
     useStore.getState().setWalletAddress(identifier)
+
+    if (primaryAddress && previousWallet && previousWallet !== primaryAddress && previousWallet.startsWith('user_')) {
+      const { leaderboardService } = require('../../services/leaderboardService')
+      leaderboardService.mergeGuestScores(previousWallet, primaryAddress)
+    }
 
     if (primaryAddress && primaryAddress.indexOf('@') !== -1) {
       var derived = primaryAddress.split('@')[0]
@@ -130,6 +147,11 @@ const Overlay = () => {
               </div>
 
               <div className="game__username-container">
+                {usernameMsg && (
+                  <div className={`game__username-msg ${usernameUpdateResult?.success ? 'success' : 'error'}`}>
+                    {usernameMsg}
+                  </div>
+                )}
                 {isEditingName ? (
                   <form className="game__username-form" onSubmit={handleSaveUsername}>
                     <input
