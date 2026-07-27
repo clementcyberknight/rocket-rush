@@ -53,7 +53,7 @@ export default function AnimatedLeaderboard({ limit = 20, compact = false }) {
           WEEKLY LEADERBOARD
         </h2>
         <span className="leaderboard__live-badge">
-          <span className="leaderboard__pulse-dot"></span> LIVE REDIS STREAM
+          <span className="leaderboard__pulse-dot"></span> LIVE LEADERBOARD
         </span>
       </div>
 
@@ -81,7 +81,6 @@ export default function AnimatedLeaderboard({ limit = 20, compact = false }) {
           })
         ) : (
           <div className="leaderboard__empty">
-            <span className="leaderboard__empty-icon">🚀</span>
             <p className="leaderboard__empty-title">NO SCORES RECORDED YET</p>
             <p className="leaderboard__empty-sub">Be the first pilot to set a weekly high score!</p>
           </div>

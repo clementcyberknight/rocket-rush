@@ -8,7 +8,6 @@ import shipModel from '../models/spaceship.gltf'
 import noiseTexture from '../textures/noise.png'
 import engineTexture from '../textures/enginetextureflip.png'
 
-
 import { useStore, mutation } from '../state/useStore'
 
 const v = new Vector3()
@@ -39,17 +38,17 @@ function ShipModel(props, { children }) {
   const gameStarted = useStore(s => s.gameStarted)
   const gameOver = useStore(s => s.gameOver)
 
-  // subscribe to controller updates on mount
+  // subscribe to controller updates on mount - pass selector as 1st argument
   const controlsRef = useRef(useStore.getState().controls)
   useEffect(() => useStore.subscribe(
-    controls => (controlsRef.current = controls),
-    state => state.controls
+    state => state.controls,
+    controls => (controlsRef.current = controls)
   ), [])
 
   useLayoutEffect(() => {
     camera.current.rotation.set(0, Math.PI, 0)
-    camera.current.position.set(0, 4, -9) // 0, 1.5, -8
-    camera.current.lookAt(v.set(ship.current.position.x, ship.current.position.y, ship.current.position.z + 10)) // modify the camera tracking to look above the center of the ship
+    camera.current.position.set(0, 4, -9)
+    camera.current.lookAt(v.set(ship.current.position.x, ship.current.position.y, ship.current.position.z + 10))
 
     camera.current.rotation.z = Math.PI
     ship.current.rotation.y = Math.PI
@@ -57,6 +56,7 @@ function ShipModel(props, { children }) {
 
   // turn off movement related parts when we arent moving
   useLayoutEffect(() => {
+    if (!innerConeExhaust.current) return
     if (!gameStarted || gameOver) {
       innerConeExhaust.current.material.visible = false
       coneExhaust.current.material.visible = false
@@ -118,7 +118,7 @@ function ShipModel(props, { children }) {
   const innerConeScaleFactor = useRef(0.7)
 
   useFrame((state, delta) => {
-    const accelDelta = 1 * delta * 2 // 1.5
+    const accelDelta = 1 * delta * 2
 
     const time = clock.getElapsedTime()
 
@@ -126,7 +126,7 @@ function ShipModel(props, { children }) {
     const medSine = Math.sin(time * 10)
     const fastSine = Math.sin(time * 15)
 
-    const { left, right } = controlsRef.current
+    const { left, right } = controlsRef.current || { left: false, right: false }
 
     rightWingTrail.current.scale.x = fastSine / 50
     rightWingTrail.current.scale.y = medSine / 50
@@ -135,7 +135,6 @@ function ShipModel(props, { children }) {
 
     // Forward Movement
     ship.current.position.z -= mutation.gameSpeed * delta * 165
-
 
     // Lateral Movement
     if (mutation.gameOver) {
@@ -146,7 +145,7 @@ function ShipModel(props, { children }) {
     // Curving during turns
     ship.current.rotation.z = mutation.horizontalVelocity * 1.5
     ship.current.rotation.y = Math.PI - mutation.horizontalVelocity * 0.4
-    ship.current.rotation.x = -Math.abs(mutation.horizontalVelocity) / 10 // max/min velocity is -0.5/0.5, divide by ten to get our desired max rotation of 0.05
+    ship.current.rotation.x = -Math.abs(mutation.horizontalVelocity) / 10
 
     // Ship Jitter - small incidental movements
     ship.current.position.y -= slowSine / 200
@@ -158,9 +157,8 @@ function ShipModel(props, { children }) {
     pointLight.current.position.x = ship.current.position.x
     pointLight.current.position.y -= slowSine / 80
 
-    // uncomment to unlock camera
-    camera.current.position.z = ship.current.position.z + 13.5 // + 13.5
-    camera.current.position.y = ship.current.position.y + 5 // 5
+    camera.current.position.z = ship.current.position.z + 13.5
+    camera.current.position.y = ship.current.position.y + 5
     camera.current.position.x = ship.current.position.x
 
     camera.current.rotation.y = Math.PI
@@ -184,8 +182,8 @@ function ShipModel(props, { children }) {
     }
 
     if (!mutation.gameOver && mutation.gameSpeed > 0) {
-      if ((left && !right)) {
-        mutation.horizontalVelocity = Math.max(-0.7 /* -0.5 */, mutation.horizontalVelocity - accelDelta)
+      if (left && !right) {
+        mutation.horizontalVelocity = Math.max(-0.7, mutation.horizontalVelocity - accelDelta)
 
         // wing trail
         rightWingTrail.current.scale.x = fastSine / 30
@@ -194,8 +192,8 @@ function ShipModel(props, { children }) {
         leftWingTrail.current.scale.y = slowSine / 200
       }
 
-      if ((!left && right)) {
-        mutation.horizontalVelocity = Math.min(0.7 /* 0.7 */, mutation.horizontalVelocity + accelDelta)
+      if (!left && right) {
+        mutation.horizontalVelocity = Math.min(0.7, mutation.horizontalVelocity + accelDelta)
 
         // wing trail
         leftWingTrail.current.scale.x = fastSine / 30
@@ -229,7 +227,6 @@ function ShipModel(props, { children }) {
         }
       }
     }
-
 
     innerConeExhaust.current.scale.z = (fastSine / 15)
     innerConeExhaust.current.scale.x = innerConeScaleFactor.current + fastSine / 15
@@ -283,7 +280,6 @@ function ShipModel(props, { children }) {
   )
 }
 
-
 useGLTF.preload(shipModel, dracoDecoderPath)
 
 function Loading() {
@@ -302,9 +298,7 @@ function Loading() {
   )
 }
 
-
 export default function Ship({ children }) {
-
   return (
     <Suspense fallback={<Loading />}>
       <ShipModel>

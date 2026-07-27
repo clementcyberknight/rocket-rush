@@ -30,7 +30,7 @@ export default function CubeWorld({ color, bgColor }) {
 
   return (
     <>
-      <Canvas key={gameSession} gl={{ antialias: false, alpha: false }} mode="concurrent" dpr={[1, 1.5]} style={{ background: `${bgColor}` }}>
+      <Canvas key={gameSession} gl={{ antialias: false, alpha: false, powerPreference: 'high-performance' }} dpr={[1, 1.5]} style={{ background: `${bgColor}` }}>
         <Suspense fallback={null}>
           <GameState />
           <Skybox />
