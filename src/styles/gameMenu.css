@@ -454,6 +454,31 @@
   text-shadow: 0 0 10px #fe2079;
 }
 
+.game__new-best-badge {
+  margin-top: 0.5rem;
+  padding: 0.3rem 0.8rem;
+  background: rgba(0, 255, 136, 0.2);
+  border: 1px solid #00ff88;
+  border-radius: 8px;
+  box-shadow: 0 0 12px #00ff88;
+  font-family: 'Commando', monospace;
+  font-size: 1.1rem;
+  color: #00ff88;
+  text-shadow: 0 0 10px #00ff88;
+}
+
+.game__best-score-box {
+  margin-top: 0.4rem;
+  font-family: 'Commando', monospace;
+  font-size: 1.05rem;
+  color: #aaa;
+}
+
+.game__best-score-label strong {
+  color: #00f0ff;
+  text-shadow: 0 0 8px #00f0ff;
+}
+
 .game__invalid-warning {
   color: #ff4444;
   font-family: 'Commando', monospace;

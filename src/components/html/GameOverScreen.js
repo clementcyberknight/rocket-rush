@@ -11,8 +11,11 @@ const GameOverScreen = () => {
   const gameOver = useStore(s => s.gameOver)
   const score = useStore(s => s.score)
   const restartGame = useStore(s => s.restartGame)
-  const userRank = useStore(s => s.userRank)
-  const submissionValid = useStore(s => s.submissionValid)
+  const userHighScore = useStore(s => s.userHighScore)
+
+  const currentScore = Math.floor(score)
+  const highScore = Math.floor(userHighScore)
+  const isNewBest = currentScore > 0 && currentScore >= highScore
 
   useEffect(() => {
     let t
@@ -38,15 +41,25 @@ const GameOverScreen = () => {
         <h1 className="game__score-gameover">GAME OVER</h1>
         <div className="game__scorecontainer">
           <div className="game__score-left">
-            <h1 className="game__score-title">SCORE</h1>
-            <h1 className="game__score">{score.toFixed(0)}</h1>
+            <h1 className="game__score-title">RUN SCORE</h1>
+            <h1 className="game__score">{currentScore}</h1>
+
+            {isNewBest ? (
+              <div className="game__new-best-badge">
+                <span>🏆 NEW PERSONAL BEST!</span>
+              </div>
+            ) : (
+              highScore > 0 && (
+                <div className="game__best-score-box">
+                  <span className="game__best-score-label">BEST SCORE: <strong>{highScore}</strong></span>
+                </div>
+              )
+            )}
+
             {userRank > 0 && (
               <div className="game__user-rank-box">
-                <span className="game__user-rank-label">WEEKLY RANK: #{userRank}</span>
+                <span className="game__user-rank-label">BEST RANK: #{userRank}</span>
               </div>
-            )}
-            {!submissionValid && (
-              <p className="game__invalid-warning">Score validation unverified</p>
             )}
           </div>
           <div className="game__score-right">
