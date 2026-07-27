@@ -3,7 +3,10 @@ import { useStore } from '../../state/useStore'
 import '../../styles/gameMenu.css'
 
 function formatDisplayName(wallet, username) {
-  if (username && typeof username === 'string' && username.trim().length > 0) return username.trim()
+  if (username && typeof username === 'string' && username.trim().length > 0) {
+    const u = username.trim()
+    return u.includes('@') ? u.split('@')[0] : u
+  }
   if (!wallet || wallet.toLowerCase() === 'anonymous') return 'ANONYMOUS PILOT'
   if (wallet.includes('@')) return wallet.split('@')[0]
   if (wallet.length <= 10) return wallet
