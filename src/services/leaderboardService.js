@@ -128,6 +128,24 @@ class LeaderboardService {
     })
     this.ws.send(bytes)
   }
+
+  updateUsername(username, wallet) {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      this.connect()
+    }
+    const cleanName = username ? username.trim() : ''
+    if (!cleanName) return
+    const bytes = encodeClientMessage({
+      type: ClientMessageType.UPDATE_USERNAME,
+      wallet: wallet || useStore.getState().walletAddress || 'anonymous',
+      username: cleanName
+    })
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(bytes)
+    }
+    useStore.getState().setUsername(cleanName)
+    localStorage.setItem('rocket_rush_custom_username', cleanName)
+  }
 }
 
 export const leaderboardService = new LeaderboardService()

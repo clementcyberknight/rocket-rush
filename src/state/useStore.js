@@ -24,6 +24,12 @@ const useStore = create(subscribeWithSelector((set, get) => {
       localStorage.setItem('rocket_rush_sensitivity', clamped.toString())
       set({ steeringSensitivity: clamped })
     },
+    musicMuted: localStorage.getItem('rocket_rush_music_muted') === 'true',
+    toggleMusic: () => set(state => {
+      const next = !state.musicMuted
+      localStorage.setItem('rocket_rush_music_muted', next.toString())
+      return { musicMuted: next }
+    }),
     directionalLight: createRef(),
     camera: createRef(),
     ship: createRef(),

@@ -155,6 +155,7 @@ export const ClientMessageType = {
   GAME_TICK: 2,
   SUBMIT_SCORE: 3,
   GET_LEADERBOARD: 4,
+  UPDATE_USERNAME: 5,
 };
 
 // Server Message Types
@@ -187,6 +188,9 @@ export function encodeClientMessage(msg) {
   } else if (msg.type === ClientMessageType.GET_LEADERBOARD) {
     if (msg.limit) inner.writeUint32(1, msg.limit);
     if (msg.week) inner.writeString(2, msg.week);
+  } else if (msg.type === ClientMessageType.UPDATE_USERNAME) {
+    inner.writeString(1, msg.wallet);
+    inner.writeString(2, msg.username);
   }
 
   outer.writeBytes(2, inner.finish());

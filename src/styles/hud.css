@@ -6,6 +6,28 @@
   font-weight: 700;
 }
 
+.hud__music-toggle {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(0, 240, 255, 0.5);
+  border-radius: 10px;
+  color: #00f0ff;
+  font-size: 1.5rem;
+  padding: 0.35rem 0.55rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+}
+
+.hud__music-toggle:hover {
+  background: rgba(0, 240, 255, 0.15);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+}
+
 @keyframes pulse {
   0% {
     color: #eee;

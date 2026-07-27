@@ -90,8 +90,14 @@ export default function Hud() {
   const address = primaryWallet?.address
   const shortAddress = address ? `${address.slice(0, 4)}...${address.slice(-3)}` : null
 
+  const musicMuted = useStore(s => s.musicMuted)
+  const toggleMusic = useStore(s => s.toggleMusic)
+
   return shown ? (
     <div className="hud">
+      <button onClick={toggleMusic} className="hud__music-toggle" title={musicMuted ? 'Unmute' : 'Mute'}>
+        {musicMuted ? '🔇' : '🔊'}
+      </button>
       {level > 0 && isSpeedingUp && (
         <div className="center">
           <h3 className="center__speedup">SPEED UP</h3>

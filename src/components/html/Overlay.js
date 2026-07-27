@@ -21,19 +21,38 @@ const Overlay = () => {
   const setGameStarted = useStore(s => s.setGameStarted)
   const steeringSensitivity = useStore(s => s.steeringSensitivity)
   const setSteeringSensitivity = useStore(s => s.setSteeringSensitivity)
+  const musicMuted = useStore(s => s.musicMuted)
+  const toggleMusic = useStore(s => s.toggleMusic)
+
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [nameInput, setNameInput] = useState('')
+
+  const currentUsername = useStore(s => s.username)
+  const walletAddress = useStore(s => s.walletAddress)
 
   const { primaryWallet, user, handleLogOut } = useDynamicContext()
 
   useEffect(() => {
+    const customStored = localStorage.getItem('rocket_rush_custom_username')
     const emailStr = user?.email || user?.verifiedCredentials?.find(c => c.format === 'email')?.address
     const emailPrefix = emailStr ? emailStr.split('@')[0] : null
-    const alias = user?.username || emailPrefix || user?.alias
+    const alias = customStored || user?.username || emailPrefix || user?.alias
 
     const identifier = primaryWallet?.address || emailStr || user?.userId || null
 
     useStore.getState().setWalletAddress(identifier)
     useStore.getState().setUsername(alias || null)
   }, [primaryWallet?.address, user])
+
+  const handleSaveUsername = (e) => {
+    e.preventDefault()
+    const clean = nameInput.trim()
+    if (clean) {
+      const { leaderboardService } = require('../../services/leaderboardService')
+      leaderboardService.updateUsername(clean, walletAddress)
+    }
+    setIsEditingName(false)
+  }
 
   useEffect(() => {
     if (gameStarted || gameOver) {
@@ -65,6 +84,9 @@ const Overlay = () => {
   return shown ? (
     <div className={`game__container`} style={{ opacity: shown ? 1 : 0, background: opaque ? '#141622FF' : '#141622CC' }}>
       <div className="game__top-right">
+        <button onClick={toggleMusic} className="game__music-toggle-btn" title={musicMuted ? 'Unmute Music' : 'Mute Music'}>
+          {musicMuted ? '🔇' : '🔊'}
+        </button>
         {!connected && <DynamicWidget variant="modal" />}
         {connected && (
           <div className="wallet__connected-box">
@@ -96,6 +118,32 @@ const Overlay = () => {
                     <button onClick={() => setSteeringSensitivity(2.0)} className={`game__sens-btn ${steeringSensitivity === 2.0 ? 'active' : ''}`}>2.0x ULTRA</button>
                   </div>
                 </div>
+              </div>
+
+              <div className="game__username-container">
+                {isEditingName ? (
+                  <form className="game__username-form" onSubmit={handleSaveUsername}>
+                    <input
+                      type="text"
+                      className="game__username-input"
+                      value={nameInput}
+                      onChange={(e) => setNameInput(e.target.value)}
+                      placeholder="CALLSIGN..."
+                      maxLength={16}
+                      autoFocus
+                    />
+                    <button type="submit" className="game__username-save-btn">SAVE 🚀</button>
+                    <button type="button" className="game__username-cancel-btn" onClick={() => setIsEditingName(false)}>✕</button>
+                  </form>
+                ) : (
+                  <div className="game__username-display">
+                    <span className="game__callsign-label">CALLSIGN:</span>
+                    <strong className="game__callsign-name">{currentUsername || 'ANONYMOUS'}</strong>
+                    <button onClick={() => { setNameInput(currentUsername || ''); setIsEditingName(true); }} className="game__username-edit-btn">
+                      ✏️ EDIT
+                    </button>
+                  </div>
+                )}
               </div>
 
               <button onClick={() => setShowLeaderboard(!showLeaderboard)} className="game__leaderboard-btn">

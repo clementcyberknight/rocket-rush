@@ -9,20 +9,54 @@ import speedUp from '../audio/speedup.mp3'
 function Sound() {
   const sound = useRef()
   const soundOrigin = useRef()
-
+  const musicRef = useRef(null)
 
   const camera = useStore(s => s.camera)
   const level = useStore(s => s.level)
   const gameStarted = useStore(s => s.gameStarted)
+  const gameOver = useStore(s => s.gameOver)
+  const musicMuted = useStore(s => s.musicMuted)
 
   const [listener] = useState(() => new AudioListener())
 
   const speedUpSound = useLoader(AudioLoader, speedUp)
 
+  // Major Soundtrack: vaitsez-game-gaming-trap-music-570137.mp3
+  useEffect(() => {
+    const audio = new Audio('/vaitsez-game-gaming-trap-music-570137.mp3')
+    audio.loop = true
+    audio.volume = 0.4
+    musicRef.current = audio
+
+    return () => {
+      if (musicRef.current) {
+        musicRef.current.pause()
+        musicRef.current = null
+      }
+    }
+  }, [])
+
+  // Control major soundtrack playback
+  useEffect(() => {
+    const audio = musicRef.current
+    if (!audio) return
+
+    if (musicMuted) {
+      audio.pause()
+      return
+    }
+
+    if (gameStarted && !gameOver) {
+      if (audio.paused) {
+        audio.play().catch(err => console.log('[Sound] Autoplay deferred until user interaction:', err))
+      }
+    } else {
+      audio.pause()
+    }
+  }, [gameStarted, gameOver, musicMuted])
 
   useEffect(() => {
     sound.current.setBuffer(speedUpSound)
-
     sound.current.setVolume(0.5)
 
     if (camera.current) {
@@ -33,11 +67,13 @@ function Sound() {
   }, [speedUpSound, camera, listener])
 
   useEffect(() => {
-    if (gameStarted && level > 0) {
+    if (gameStarted && level > 0 && !musicMuted) {
       sound.current.setBuffer(speedUpSound)
-      sound.current.play()
+      if (!sound.current.isPlaying) {
+        sound.current.play()
+      }
     }
-  }, [gameStarted, level, speedUpSound])
+  }, [gameStarted, level, speedUpSound, musicMuted])
 
   return (
     <group ref={soundOrigin}>
@@ -47,7 +83,6 @@ function Sound() {
 }
 
 export default function SuspenseSound() {
-
   return (
     <Suspense fallback={null}>
       <Sound />
