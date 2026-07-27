@@ -18,6 +18,12 @@ const useStore = create(subscribeWithSelector((set, get) => {
       left: false,
       right: false,
     },
+    steeringSensitivity: parseFloat(localStorage.getItem('rocket_rush_sensitivity') || '1.0'),
+    setSteeringSensitivity: (val) => {
+      const clamped = Math.max(0.5, Math.min(3.0, val))
+      localStorage.setItem('rocket_rush_sensitivity', clamped.toString())
+      set({ steeringSensitivity: clamped })
+    },
     directionalLight: createRef(),
     camera: createRef(),
     ship: createRef(),

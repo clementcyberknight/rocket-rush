@@ -222,6 +222,62 @@
   margin: 0;
 }
 
+.game__sensitivity-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0.4rem;
+  gap: 0.3rem;
+}
+
+.game__sensitivity-label {
+  font-family: 'Commando', monospace;
+  font-size: 0.85rem;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.5px;
+}
+
+.game__sensitivity-label strong {
+  color: #fe2079;
+  text-shadow: 0 0 10px #fe2079;
+}
+
+.game__sensitivity-presets {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.game__sens-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(254, 32, 121, 0.4);
+  border-radius: 8px;
+  color: #ddd;
+  font-family: 'Commando', monospace;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.game__sens-btn:hover {
+  background: rgba(254, 32, 121, 0.2);
+  border-color: #fe2079;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(254, 32, 121, 0.5);
+}
+
+.game__sens-btn.active {
+  background: #fe2079;
+  border-color: #fe2079;
+  color: #fff;
+  box-shadow: 0 0 12px #fe2079;
+  font-weight: bold;
+}
+
 .game__menu-button:hover {
   color: #FFF;
   cursor: pointer;

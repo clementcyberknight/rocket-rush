@@ -115,10 +115,11 @@ function ShipModel(props, { children }) {
     return points
   })
 
-  const innerConeScaleFactor = useRef(0.7)
+  const sensitivity = useStore(s => s.steeringSensitivity) || 1.0
 
   useFrame((state, delta) => {
-    const accelDelta = 1 * delta * 2
+    const accelDelta = 1 * delta * 2 * sensitivity
+    const maxVelocity = 0.7 * sensitivity
 
     const time = clock.getElapsedTime()
 
@@ -143,7 +144,7 @@ function ShipModel(props, { children }) {
     ship.current.position.x += mutation.horizontalVelocity * delta * 165
 
     // Curving during turns
-    ship.current.rotation.z = mutation.horizontalVelocity * 1.5
+    ship.current.rotation.z = mutation.horizontalVelocity * (1.5 / Math.max(1, sensitivity * 0.8))
     ship.current.rotation.y = Math.PI - mutation.horizontalVelocity * 0.4
     ship.current.rotation.x = -Math.abs(mutation.horizontalVelocity) / 10
 
@@ -183,7 +184,7 @@ function ShipModel(props, { children }) {
 
     if (!mutation.gameOver && mutation.gameSpeed > 0) {
       if (left && !right) {
-        mutation.horizontalVelocity = Math.max(-0.7, mutation.horizontalVelocity - accelDelta)
+        mutation.horizontalVelocity = Math.max(-maxVelocity, mutation.horizontalVelocity - accelDelta)
 
         // wing trail
         rightWingTrail.current.scale.x = fastSine / 30
@@ -193,7 +194,7 @@ function ShipModel(props, { children }) {
       }
 
       if (!left && right) {
-        mutation.horizontalVelocity = Math.min(0.7, mutation.horizontalVelocity + accelDelta)
+        mutation.horizontalVelocity = Math.min(maxVelocity, mutation.horizontalVelocity + accelDelta)
 
         // wing trail
         leftWingTrail.current.scale.x = fastSine / 30

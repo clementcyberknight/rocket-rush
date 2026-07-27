@@ -19,6 +19,8 @@ const Overlay = () => {
   const gameStarted = useStore(s => s.gameStarted)
   const gameOver = useStore(s => s.gameOver)
   const setGameStarted = useStore(s => s.setGameStarted)
+  const steeringSensitivity = useStore(s => s.steeringSensitivity)
+  const setSteeringSensitivity = useStore(s => s.setSteeringSensitivity)
 
   const { primaryWallet, handleLogOut } = useDynamicContext()
 
@@ -75,7 +77,18 @@ const Overlay = () => {
               <button onClick={handleStart} className="game__menu-button">{'STA>RT'}</button>
               <div className="game__menu-controls">
                 <p>CONTROLS</p>
-                ← a / d →
+                <span>← a / d →</span>
+                <div className="game__sensitivity-container">
+                  <span className="game__sensitivity-label">
+                    SENSITIVITY: <strong>{steeringSensitivity.toFixed(1)}x</strong>
+                  </span>
+                  <div className="game__sensitivity-presets">
+                    <button onClick={() => setSteeringSensitivity(0.7)} className={`game__sens-btn ${steeringSensitivity === 0.7 ? 'active' : ''}`}>0.7x</button>
+                    <button onClick={() => setSteeringSensitivity(1.0)} className={`game__sens-btn ${steeringSensitivity === 1.0 ? 'active' : ''}`}>1.0x</button>
+                    <button onClick={() => setSteeringSensitivity(1.5)} className={`game__sens-btn ${steeringSensitivity === 1.5 ? 'active' : ''}`}>1.5x PRO</button>
+                    <button onClick={() => setSteeringSensitivity(2.0)} className={`game__sens-btn ${steeringSensitivity === 2.0 ? 'active' : ''}`}>2.0x ULTRA</button>
+                  </div>
+                </div>
               </div>
 
               <button onClick={() => setShowLeaderboard(!showLeaderboard)} className="game__leaderboard-btn">
