@@ -6,6 +6,15 @@ import {
 } from '../proto/protoCodec'
 import { useStore } from '../state/useStore'
 
+function getGuestId() {
+  let guestId = localStorage.getItem('rocket_rush_guest_id')
+  if (!guestId) {
+    guestId = `user_${Math.random().toString(36).slice(2, 10)}_${Date.now().toString(36)}`
+    localStorage.setItem('rocket_rush_guest_id', guestId)
+  }
+  return guestId
+}
+
 class LeaderboardService {
   constructor() {
     this.ws = null
@@ -89,10 +98,15 @@ class LeaderboardService {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       this.connect()
     }
+    const id = wallet || getGuestId()
+    let name = username
+    if (!name && id.includes('@')) {
+      name = id.split('@')[0]
+    }
     const bytes = encodeClientMessage({
       type: ClientMessageType.START_SESSION,
-      wallet: wallet || 'anonymous',
-      username: username || undefined
+      wallet: id,
+      username: name || undefined
     })
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(bytes)
@@ -118,12 +132,17 @@ class LeaderboardService {
         console.warn('[Leaderboard] WS not open for score submission, retrying...')
         return false
       }
+      const id = wallet || getGuestId()
+      let name = username
+      if (!name && id.includes('@')) {
+        name = id.split('@')[0]
+      }
       const bytes = encodeClientMessage({
         type: ClientMessageType.SUBMIT_SCORE,
         sessionId: this.sessionId || '',
-        wallet: wallet || 'anonymous',
+        wallet: id,
         score: Math.max(0, score),
-        username: username || undefined
+        username: name || undefined
       })
       this.ws.send(bytes)
       this.sessionId = null
@@ -164,7 +183,7 @@ class LeaderboardService {
     if (!cleanName) return
     const bytes = encodeClientMessage({
       type: ClientMessageType.UPDATE_USERNAME,
-      wallet: wallet || useStore.getState().walletAddress || 'anonymous',
+      wallet: wallet || useStore.getState().walletAddress || getGuestId(),
       username: cleanName
     })
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
