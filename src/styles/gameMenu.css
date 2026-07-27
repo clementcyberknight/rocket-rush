@@ -57,6 +57,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   text-shadow: 0 0 5px #fe2079;
+  line-height: 1;
 }
 
 .login__disconnect-btn:hover {
@@ -253,10 +254,11 @@
   border-radius: 16px;
   padding: 0.75rem 1.25rem;
   box-shadow: 0 0 25px rgba(254, 32, 121, 0.4);
-  max-width: 420px;
+  max-width: 480px;
   width: 90%;
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
+  pointer-events: auto;
 }
 
 .game__user-rank-box {
@@ -333,6 +335,24 @@
   flex-direction: column;
   gap: 0.4rem;
   width: 100%;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.leaderboard__list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.leaderboard__list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.leaderboard__list::-webkit-scrollbar-thumb {
+  background: #fe2079;
+  border-radius: 4px;
+  box-shadow: 0 0 6px #fe2079;
 }
 
 .leaderboard__item {
@@ -492,7 +512,8 @@
   font-family: 'Commando', monospace;
   font-size: 1rem;
   text-shadow: 0 0 10px #fe2079;
-  margin: 0 0 1rem 0;
+  margin: 0;
+  line-height: 1;
 }
 
 .score__wallet {

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../../state/useStore'
 import '../../styles/gameMenu.css'
 
-export default function AnimatedLeaderboard({ limit = 5, compact = false }) {
+export default function AnimatedLeaderboard({ limit = 20, compact = false }) {
   const storeLeaderboard = useStore(s => s.leaderboard)
   const leaderboard = storeLeaderboard || []
   const userRank = useStore(s => s.userRank)
@@ -44,7 +44,7 @@ export default function AnimatedLeaderboard({ limit = 5, compact = false }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storeLeaderboard])
 
-  const shortAddr = (addr) => (addr && addr.length > 8 ? `${addr.slice(0, 4)}...${addr.slice(-4)}` : (addr || 'Anonymous'))
+  const shortAddr = (addr) => (addr && addr.length > 8 ? `${addr.slice(0, 4)}...${addr.slice(-3)}` : (addr || 'Anonymous'))
 
   return (
     <div className={`leaderboard__container ${compact ? 'leaderboard__compact' : ''}`}>

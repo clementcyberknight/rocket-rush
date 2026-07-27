@@ -88,7 +88,7 @@ export default function Hud() {
   }, [set, right])
 
   const address = primaryWallet?.address
-  const shortAddress = address ? `${address.slice(0, 4)}...${address.slice(-4)}` : null
+  const shortAddress = address ? `${address.slice(0, 4)}...${address.slice(-3)}` : null
 
   return shown ? (
     <div className="hud">

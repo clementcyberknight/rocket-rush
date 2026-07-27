@@ -1,8 +1,9 @@
 import { Color } from 'three'
 import { createRef } from 'react'
 import create from 'zustand'
+import { subscribeWithSelector } from 'zustand/middleware'
 
-const useStore = create((set, get) => {
+const useStore = create(subscribeWithSelector((set, get) => {
 
   return {
     set,
@@ -63,7 +64,7 @@ const useStore = create((set, get) => {
       }))
     }
   }
-})
+}))
 
 const mutation = {
   gameOver: false,

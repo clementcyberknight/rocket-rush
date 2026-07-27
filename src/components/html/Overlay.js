@@ -51,7 +51,7 @@ const Overlay = () => {
   }
 
   const connected = !!primaryWallet
-  const shortAddress = connected ? `${primaryWallet.address.slice(0, 4)}...${primaryWallet.address.slice(-4)}` : null
+  const shortAddress = connected ? `${primaryWallet.address.slice(0, 4)}...${primaryWallet.address.slice(-3)}` : null
 
   return shown ? (
     <div className={`game__container`} style={{ opacity: shown ? 1 : 0, background: opaque ? '#141622FF' : '#141622CC' }}>
@@ -72,7 +72,6 @@ const Overlay = () => {
             <Loader active={active} progress={progress} />
           ) : (
             <div className="game__center-content">
-              <img className="game__logo-small" style={{ maxHeight: '180px', width: 'auto', marginBottom: '0.5rem' }} src="/rocketrush-logo.png" alt="Rocket Rush Logo" />
               <button onClick={handleStart} className="game__menu-button">{'STA>RT'}</button>
               <div className="game__menu-controls">
                 <p>CONTROLS</p>
@@ -85,7 +84,7 @@ const Overlay = () => {
 
               {showLeaderboard && (
                 <div className="game__leaderboard-panel">
-                  <AnimatedLeaderboard limit={5} compact={true} />
+                  <AnimatedLeaderboard limit={20} compact={true} />
                 </div>
               )}
 

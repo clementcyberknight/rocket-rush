@@ -14,18 +14,27 @@ class LeaderboardService {
     this.reconnectTimer = null
   }
 
+  getResolvedUrl() {
+    let targetUrl = this.url
+    if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+      targetUrl = targetUrl.replace(/^ws:\/\//i, 'wss://')
+    }
+    return targetUrl
+  }
+
   connect() {
     if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
       return
     }
 
     try {
-      this.ws = new WebSocket(this.url)
+      const finalUrl = this.getResolvedUrl()
+      this.ws = new WebSocket(finalUrl)
       this.ws.binaryType = 'arraybuffer'
 
       this.ws.onopen = () => {
         // Fetch current weekly leaderboard upon connecting
-        this.getLeaderboard(10)
+        this.getLeaderboard(20)
       }
 
       this.ws.onmessage = (event) => {
@@ -111,7 +120,7 @@ class LeaderboardService {
     useStore.getState().setSessionId(null)
   }
 
-  getLeaderboard(limit = 10) {
+  getLeaderboard(limit = 20) {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return
     const bytes = encodeClientMessage({
       type: ClientMessageType.GET_LEADERBOARD,
