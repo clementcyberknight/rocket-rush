@@ -240,6 +240,13 @@ export function decodeServerMessage(buffer) {
             else if (itag.fieldNumber === 4 && itag.wireType === 1) score = itemReader.readDouble();
             else itemReader.skip(itag.wireType);
           }
+          if (wallet && typeof wallet === 'string' && wallet.includes(',')) {
+            const parts = wallet.split(',');
+            wallet = parts[0];
+            if (!score || score === 0) {
+              score = parseFloat(parts[1]) || 0;
+            }
+          }
           entries.push({ rank, wallet, username, score });
         } else inner.skip(tag.wireType);
       }
