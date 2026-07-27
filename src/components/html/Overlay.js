@@ -32,13 +32,13 @@ const Overlay = () => {
 
   const { primaryWallet, user, handleLogOut } = useDynamicContext()
 
-  useEffect(() => {
-    const customStored = localStorage.getItem('rocket_rush_custom_username')
-    const emailStr = user?.email || user?.verifiedCredentials?.find(c => c.format === 'email')?.address
-    const emailPrefix = emailStr ? emailStr.split('@')[0] : null
-    const alias = customStored || user?.username || emailPrefix || user?.alias
+    let guestId = localStorage.getItem('rocket_rush_guest_id')
+    if (!guestId) {
+      guestId = `guest_${Math.random().toString(36).slice(2, 10)}`
+      localStorage.setItem('rocket_rush_guest_id', guestId)
+    }
 
-    const identifier = primaryWallet?.address || emailStr || user?.userId || null
+    const identifier = primaryWallet?.address || emailStr || user?.userId || guestId
 
     useStore.getState().setWalletAddress(identifier)
     useStore.getState().setUsername(alias || null)

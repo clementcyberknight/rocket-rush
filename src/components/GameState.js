@@ -35,18 +35,22 @@ export default function GameState() {
     mutation.currentLevelLength = -(level * PLANE_SIZE * LEVEL_SIZE)
   }, [level])
 
+  const scoreSubmittedRef = useRef(false)
+
   // Handle Game Session Start
   useEffect(() => {
-    if (gameStarted && !gameOver && !sessionStartedRef.current) {
+    if (gameStarted && !gameOver) {
       mutation.desiredSpeed = INITIAL_GAME_SPEED
       sessionStartedRef.current = true
+      scoreSubmittedRef.current = false
       leaderboardService.startSession(walletAddress, username)
     }
   }, [gameStarted, gameOver, walletAddress, username])
 
   // Handle Game Over Score Submission
   useEffect(() => {
-    if (gameOver && sessionStartedRef.current) {
+    if (gameOver && !scoreSubmittedRef.current) {
+      scoreSubmittedRef.current = true
       sessionStartedRef.current = false
       const finalScore = Math.max(0, mutation.score)
       leaderboardService.submitScore(finalScore, walletAddress, username)

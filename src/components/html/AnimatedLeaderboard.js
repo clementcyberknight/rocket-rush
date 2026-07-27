@@ -7,7 +7,7 @@ function formatDisplayName(wallet, username) {
     const u = username.trim()
     return u.includes('@') ? u.split('@')[0] : u
   }
-  if (!wallet || wallet.toLowerCase() === 'anonymous') return 'ANONYMOUS PILOT'
+  if (!wallet || wallet.toLowerCase() === 'anonymous' || wallet.startsWith('guest_')) return 'ANONYMOUS PILOT'
   if (wallet.includes('@')) return wallet.split('@')[0]
   if (wallet.length <= 10) return wallet
   return `${wallet.slice(0, 4)}...${wallet.slice(-3)}`
