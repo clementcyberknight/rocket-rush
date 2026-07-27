@@ -35,6 +35,12 @@ class LeaderboardService {
       this.ws.onopen = () => {
         // Fetch current weekly leaderboard upon connecting
         this.getLeaderboard(20)
+
+        // If we're in an active game session, re-establish it with the backend
+        const state = useStore.getState()
+        if (state.gameStarted && !state.gameOver) {
+          this.startSession(state.walletAddress, state.username)
+        }
       }
 
       this.ws.onmessage = (event) => {
@@ -107,17 +113,38 @@ class LeaderboardService {
   }
 
   submitScore(score, wallet, username) {
-    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return
-    const bytes = encodeClientMessage({
-      type: ClientMessageType.SUBMIT_SCORE,
-      sessionId: this.sessionId || '',
-      wallet: wallet || 'anonymous',
-      score: Math.max(0, score),
-      username: username || undefined
-    })
-    this.ws.send(bytes)
-    this.sessionId = null
-    useStore.getState().setSessionId(null)
+    const sendScore = () => {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        console.warn('[Leaderboard] WS not open for score submission, retrying...')
+        return false
+      }
+      const bytes = encodeClientMessage({
+        type: ClientMessageType.SUBMIT_SCORE,
+        sessionId: this.sessionId || '',
+        wallet: wallet || 'anonymous',
+        score: Math.max(0, score),
+        username: username || undefined
+      })
+      this.ws.send(bytes)
+      this.sessionId = null
+      useStore.getState().setSessionId(null)
+      return true
+    }
+
+    if (!sendScore()) {
+      // WS not open — reconnect and retry after connection opens
+      this.connect()
+      let retries = 0
+      const retryInterval = setInterval(() => {
+        retries++
+        if (sendScore() || retries >= 5) {
+          clearInterval(retryInterval)
+          if (retries >= 5) {
+            console.error('[Leaderboard] Failed to submit score after 5 retries')
+          }
+        }
+      }, 1000)
+    }
   }
 
   getLeaderboard(limit = 20) {
