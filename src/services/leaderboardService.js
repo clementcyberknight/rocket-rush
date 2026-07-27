@@ -6,6 +6,15 @@ import {
 } from '../proto/protoCodec'
 import { useStore } from '../state/useStore'
 
+function getGuestId() {
+  let guestId = localStorage.getItem('rocket_rush_guest_id')
+  if (!guestId) {
+    guestId = `user_${Math.random().toString(36).slice(2, 10)}_${Date.now().toString(36)}`
+    localStorage.setItem('rocket_rush_guest_id', guestId)
+  }
+  return guestId
+}
+
 class LeaderboardService {
   constructor() {
     this.ws = null
@@ -65,6 +74,19 @@ class LeaderboardService {
             console.warn('[Leaderboard] Backend error:', msg.message)
             break
 
+          case ServerMessageType.USERNAME_UPDATED:
+            if (msg.success) {
+              console.log('[Leaderboard] Username updated successfully:', msg.message)
+              localStorage.setItem('rocket_rush_custom_username', this.pendingUsername)
+            } else {
+              console.warn('[Leaderboard] Username update failed:', msg.message)
+              useStore.getState().setUsername(this.previousUsername)
+            }
+            this.pendingUsername = null
+            this.previousUsername = null
+            useStore.getState().setUsernameUpdateResult(msg.success, msg.message)
+            break
+
           default:
             break
         }
@@ -89,10 +111,15 @@ class LeaderboardService {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       this.connect()
     }
+    const id = wallet || getGuestId()
+    let name = username
+    if (!name && id.includes('@')) {
+      name = id.split('@')[0]
+    }
     const bytes = encodeClientMessage({
       type: ClientMessageType.START_SESSION,
-      wallet: wallet || 'anonymous',
-      username: username || undefined
+      wallet: id,
+      username: name || undefined
     })
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(bytes)
@@ -118,12 +145,17 @@ class LeaderboardService {
         console.warn('[Leaderboard] WS not open for score submission, retrying...')
         return false
       }
+      const id = wallet || getGuestId()
+      let name = username
+      if (!name && id.includes('@')) {
+        name = id.split('@')[0]
+      }
       const bytes = encodeClientMessage({
         type: ClientMessageType.SUBMIT_SCORE,
         sessionId: this.sessionId || '',
-        wallet: wallet || 'anonymous',
+        wallet: id,
         score: Math.max(0, score),
-        username: username || undefined
+        username: name || undefined
       })
       this.ws.send(bytes)
       this.sessionId = null
@@ -162,16 +194,33 @@ class LeaderboardService {
     }
     const cleanName = username ? username.trim() : ''
     if (!cleanName) return
+    this.pendingUsername = cleanName
+    this.previousUsername = localStorage.getItem('rocket_rush_custom_username') || null
     const bytes = encodeClientMessage({
       type: ClientMessageType.UPDATE_USERNAME,
-      wallet: wallet || useStore.getState().walletAddress || 'anonymous',
+      wallet: wallet || useStore.getState().walletAddress || getGuestId(),
       username: cleanName
     })
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(bytes)
     }
     useStore.getState().setUsername(cleanName)
-    localStorage.setItem('rocket_rush_custom_username', cleanName)
+  }
+
+  mergeGuestScores(fromWallet, toWallet) {
+    if (!fromWallet || !toWallet || fromWallet === toWallet) return
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      this.connect()
+    }
+    console.log(`[Leaderboard] Merging guest scores from ${fromWallet} -> ${toWallet}`)
+    const bytes = encodeClientMessage({
+      type: ClientMessageType.MERGE_GUEST,
+      fromWallet,
+      toWallet
+    })
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(bytes)
+    }
   }
 }
 

@@ -55,6 +55,8 @@ const useStore = create(subscribeWithSelector((set, get) => {
     setSessionId: (id) => set({ sessionId: id }),
     setLeaderboard: (leaderboard, week) => set({ leaderboard, currentWeek: week }),
     setUserRank: (rank, score, valid = true) => set({ userRank: rank, userHighScore: score, submissionValid: valid }),
+    usernameUpdateResult: null,
+    setUsernameUpdateResult: (success, message) => set({ usernameUpdateResult: { success, message, timestamp: Date.now() } }),
 
     restartGame: () => {
       mutation.gameOver = false

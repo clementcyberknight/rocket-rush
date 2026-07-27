@@ -26,29 +26,49 @@ const Overlay = () => {
 
   const [isEditingName, setIsEditingName] = useState(false)
   const [nameInput, setNameInput] = useState('')
+  const [usernameMsg, setUsernameMsg] = useState(null)
 
   const currentUsername = useStore(s => s.username)
   const walletAddress = useStore(s => s.walletAddress)
+  const usernameUpdateResult = useStore(s => s.usernameUpdateResult)
 
-  const { primaryWallet, user, handleLogOut } = useDynamicContext()
+  const { primaryWallet, handleLogOut } = useDynamicContext()
 
   useEffect(() => {
-    const customStored = localStorage.getItem('rocket_rush_custom_username')
-    const emailStr = user?.email || user?.verifiedCredentials?.find(c => c.format === 'email')?.address
-    const emailPrefix = emailStr ? emailStr.split('@')[0] : null
-    const alias = customStored || user?.username || emailPrefix || user?.alias
+    if (usernameUpdateResult) {
+      setUsernameMsg(usernameUpdateResult.message)
+      const timer = setTimeout(() => setUsernameMsg(null), 4000)
+      return () => clearTimeout(timer)
+    }
+  }, [usernameUpdateResult])
 
-    let guestId = localStorage.getItem('rocket_rush_guest_id')
+  useEffect(() => {
+    var guestId = window.localStorage.getItem('rocket_rush_guest_id')
     if (!guestId) {
-      guestId = `guest_${Math.random().toString(36).slice(2, 10)}`
-      localStorage.setItem('rocket_rush_guest_id', guestId)
+      guestId = 'user_' + Math.random().toString(36).slice(2, 10) + '_' + Date.now().toString(36)
+      window.localStorage.setItem('rocket_rush_guest_id', guestId)
     }
 
-    const identifier = primaryWallet?.address || emailStr || user?.userId || guestId
+    var primaryAddress = primaryWallet && primaryWallet.address
+    var identifier = primaryAddress || guestId
+
+    const previousWallet = useStore.getState().walletAddress
 
     useStore.getState().setWalletAddress(identifier)
-    useStore.getState().setUsername(alias || null)
-  }, [primaryWallet?.address, user])
+
+    if (primaryAddress && previousWallet && previousWallet !== primaryAddress && previousWallet.startsWith('user_')) {
+      const { leaderboardService } = require('../../services/leaderboardService')
+      leaderboardService.mergeGuestScores(previousWallet, primaryAddress)
+    }
+
+    if (primaryAddress && primaryAddress.indexOf('@') !== -1) {
+      var derived = primaryAddress.split('@')[0]
+      var saved = window.localStorage.getItem('rocket_rush_custom_username')
+      if (!saved) {
+        useStore.getState().setUsername(derived)
+      }
+    }
+  }, [primaryWallet && primaryWallet.address])
 
   const handleSaveUsername = (e) => {
     e.preventDefault()
@@ -127,6 +147,11 @@ const Overlay = () => {
               </div>
 
               <div className="game__username-container">
+                {usernameMsg && (
+                  <div className={`game__username-msg ${usernameUpdateResult?.success ? 'success' : 'error'}`}>
+                    {usernameMsg}
+                  </div>
+                )}
                 {isEditingName ? (
                   <form className="game__username-form" onSubmit={handleSaveUsername}>
                     <input

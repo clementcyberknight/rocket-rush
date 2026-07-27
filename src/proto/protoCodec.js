@@ -156,6 +156,7 @@ export const ClientMessageType = {
   SUBMIT_SCORE: 3,
   GET_LEADERBOARD: 4,
   UPDATE_USERNAME: 5,
+  MERGE_GUEST: 6,
 };
 
 // Server Message Types
@@ -164,6 +165,7 @@ export const ServerMessageType = {
   LEADERBOARD: 2,
   SCORE_SUBMITTED: 3,
   ERROR: 4,
+  USERNAME_UPDATED: 5,
 };
 
 export function encodeClientMessage(msg) {
@@ -191,6 +193,9 @@ export function encodeClientMessage(msg) {
   } else if (msg.type === ClientMessageType.UPDATE_USERNAME) {
     inner.writeString(1, msg.wallet);
     inner.writeString(2, msg.username);
+  } else if (msg.type === ClientMessageType.MERGE_GUEST) {
+    inner.writeString(1, msg.fromWallet);
+    inner.writeString(2, msg.toWallet);
   }
 
   outer.writeBytes(2, inner.finish());
@@ -275,6 +280,16 @@ export function decodeServerMessage(buffer) {
         else inner.skip(tag.wireType);
       }
       return { type, message };
+    } else if (type === ServerMessageType.USERNAME_UPDATED) {
+      let success = false, message = "";
+      while (inner.hasMore()) {
+        const tag = inner.readTag();
+        if (!tag) break;
+        if (tag.fieldNumber === 1 && tag.wireType === 0) success = inner.readVarint() === 1;
+        else if (tag.fieldNumber === 2 && tag.wireType === 2) message = inner.readString();
+        else inner.skip(tag.wireType);
+      }
+      return { type, success, message };
     }
     return null;
   } catch (e) {
