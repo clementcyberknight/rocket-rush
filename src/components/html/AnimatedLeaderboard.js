@@ -52,8 +52,6 @@ export default function AnimatedLeaderboard({ limit = 20, compact = false }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storeLeaderboard])
 
-  const shortAddr = (addr) => (addr && addr.length > 8 ? `${addr.slice(0, 4)}...${addr.slice(-3)}` : (addr || 'Anonymous'))
-
   return (
     <div className={`leaderboard__container ${compact ? 'leaderboard__compact' : ''}`}>
       <div className="leaderboard__header">
