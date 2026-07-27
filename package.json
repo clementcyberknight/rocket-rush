@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "A browser-based 3D rocket runner game.",
   "private": true,
-  "homepage": "/demo-game",
+  "homepage": ".",
   "dependencies": {
     "@dynamic-labs/sdk-react-core": "^4.94.0",
     "@dynamic-labs/solana": "^4.94.0",
