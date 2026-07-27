@@ -121,9 +121,10 @@ export class BinaryReader {
 
   readBytes() {
     const len = this.readVarint();
-    const bytes = new Uint8Array(this.view.buffer, this.view.byteOffset + this.offset, len);
+    const start = this.view.byteOffset + this.offset;
+    const bytes = new Uint8Array(this.view.buffer.slice(start, start + len));
     this.offset += len;
-    return new Uint8Array(bytes);
+    return bytes;
   }
 
   readDouble() {
@@ -266,6 +267,7 @@ export function decodeServerMessage(buffer) {
     }
     return null;
   } catch (e) {
+    console.error('[ProtoCodec] decodeServerMessage error:', e);
     return null;
   }
 }

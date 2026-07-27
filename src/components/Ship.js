@@ -116,6 +116,7 @@ function ShipModel(props, { children }) {
   })
 
   const sensitivity = useStore(s => s.steeringSensitivity) || 1.0
+  const innerConeScaleFactor = useRef(0.7)
 
   useFrame((state, delta) => {
     const accelDelta = 1 * delta * 2 * sensitivity
