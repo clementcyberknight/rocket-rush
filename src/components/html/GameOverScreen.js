@@ -1,0 +1,63 @@
+import { useState, useEffect } from 'react'
+
+import '../../styles/gameMenu.css'
+import { useStore } from '../../state/useStore'
+import AnimatedLeaderboard from './AnimatedLeaderboard'
+
+const GameOverScreen = () => {
+  const [shown, setShown] = useState(false)
+  const [opaque, setOpaque] = useState(false)
+
+  const gameOver = useStore(s => s.gameOver)
+  const score = useStore(s => s.score)
+  const restartGame = useStore(s => s.restartGame)
+  const userRank = useStore(s => s.userRank)
+  const submissionValid = useStore(s => s.submissionValid)
+
+  useEffect(() => {
+    let t
+    if (gameOver !== opaque) t = setTimeout(() => setOpaque(gameOver), 500)
+    return () => clearTimeout(t)
+  }, [gameOver, opaque])
+
+  useEffect(() => {
+    if (gameOver) {
+      setShown(true)
+    } else {
+      setShown(false)
+    }
+  }, [gameOver])
+
+  const handleRestart = () => {
+    restartGame()
+  }
+
+  return shown ? (
+    <div className="game__container" style={{ opacity: shown ? 1 : 0, background: opaque ? '#141622FF' : '#141622CC' }}>
+      <div className="game__menu">
+        <img className="game__logo-small" width="512px" src="/rocketrush-logo.png" alt="Rocket Rush Logo" />
+        <h1 className="game__score-gameover">GAME OVER</h1>
+        <div className="game__scorecontainer">
+          <div className="game__score-left">
+            <h1 className="game__score-title">SCORE</h1>
+            <h1 className="game__score">{score.toFixed(0)}</h1>
+            {userRank > 0 && (
+              <div className="game__user-rank-box">
+                <span className="game__user-rank-label">WEEKLY RANK: #{userRank}</span>
+              </div>
+            )}
+            {!submissionValid && (
+              <p className="game__invalid-warning">Score validation unverified</p>
+            )}
+          </div>
+          <div className="game__score-right">
+            <AnimatedLeaderboard limit={5} compact={true} />
+          </div>
+        </div>
+        <button onClick={handleRestart} className="game__menu-button">PLAY AGAIN</button>
+      </div>
+    </div>
+  ) : null
+}
+
+export default GameOverScreen

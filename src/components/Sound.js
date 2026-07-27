@@ -1,0 +1,56 @@
+import { AudioListener, AudioLoader } from 'three'
+import { useRef, useEffect, useState, Suspense } from 'react'
+import { useLoader } from '@react-three/fiber'
+
+import { useStore } from '../state/useStore'
+
+import speedUp from '../audio/speedup.mp3'
+
+function Sound() {
+  const sound = useRef()
+  const soundOrigin = useRef()
+
+
+  const camera = useStore(s => s.camera)
+  const level = useStore(s => s.level)
+  const gameStarted = useStore(s => s.gameStarted)
+
+  const [listener] = useState(() => new AudioListener())
+
+  const speedUpSound = useLoader(AudioLoader, speedUp)
+
+
+  useEffect(() => {
+    sound.current.setBuffer(speedUpSound)
+
+    sound.current.setVolume(0.5)
+
+    if (camera.current) {
+      const cam = camera.current
+      cam.add(listener)
+      return () => cam.remove(listener)
+    }
+  }, [speedUpSound, camera, listener])
+
+  useEffect(() => {
+    if (gameStarted && level > 0) {
+      sound.current.setBuffer(speedUpSound)
+      sound.current.play()
+    }
+  }, [gameStarted, level, speedUpSound])
+
+  return (
+    <group ref={soundOrigin}>
+      <audio ref={sound} args={[listener]} />
+    </group>
+  )
+}
+
+export default function SuspenseSound() {
+
+  return (
+    <Suspense fallback={null}>
+      <Sound />
+    </Suspense>
+  )
+}
