@@ -435,6 +435,48 @@
   text-shadow: 0 0 10px #fe2079;
 }
 
+.leaderboard__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.8rem 1rem;
+  background: rgba(254, 32, 121, 0.05);
+  border: 1px dashed rgba(254, 32, 121, 0.4);
+  border-radius: 12px;
+  text-align: center;
+  margin: 0.5rem 0;
+  width: 100%;
+}
+
+.leaderboard__empty-icon {
+  font-size: 2.2rem;
+  margin-bottom: 0.4rem;
+  animation: floatRocket 3s ease-in-out infinite alternate;
+}
+
+@keyframes floatRocket {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(5deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+.leaderboard__empty-title {
+  color: #fe2079;
+  font-family: 'Commando', monospace;
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px #fe2079;
+  margin: 0 0 0.3rem 0;
+}
+
+.leaderboard__empty-sub {
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Commando', monospace;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
 .login {
   display: flex;
   flex-direction: column;
