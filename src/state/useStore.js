@@ -27,7 +27,8 @@ const useStore = create((set, get) => {
     setGameStarted: (started) => set(state => ({ gameStarted: started })),
     setGameOver: (over) => set(state => ({ gameOver: over })),
 
-    // Leaderboard state
+    // Leaderboard & Wallet state
+    walletAddress: null,
     sessionId: null,
     leaderboard: [],
     currentWeek: '',
@@ -35,6 +36,7 @@ const useStore = create((set, get) => {
     userHighScore: 0,
     submissionValid: true,
 
+    setWalletAddress: (addr) => set({ walletAddress: addr }),
     setSessionId: (id) => set({ sessionId: id }),
     setLeaderboard: (leaderboard, week) => set({ leaderboard, currentWeek: week }),
     setUserRank: (rank, score, valid = true) => set({ userRank: rank, userHighScore: score, submissionValid: valid }),

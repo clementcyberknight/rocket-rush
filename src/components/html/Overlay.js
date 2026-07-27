@@ -23,6 +23,10 @@ const Overlay = () => {
   const { primaryWallet, handleLogOut } = useDynamicContext()
 
   useEffect(() => {
+    useStore.getState().setWalletAddress(primaryWallet?.address || null)
+  }, [primaryWallet?.address])
+
+  useEffect(() => {
     if (gameStarted || gameOver) {
       setShown(false)
     } else if (!gameStarted) {

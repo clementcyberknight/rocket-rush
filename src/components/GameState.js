@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { useDynamicContext } from '@dynamic-labs/sdk-react-core'
 
 import { useStore, mutation } from '../state/useStore'
 import { INITIAL_GAME_SPEED, PLANE_SIZE, LEVEL_SIZE } from '../constants'
@@ -21,9 +20,7 @@ export default function GameState() {
   const gameOver = useStore(s => s.gameOver)
 
   const level = useStore(s => s.level)
-
-  const { primaryWallet } = useDynamicContext()
-  const walletAddress = primaryWallet?.address
+  const walletAddress = useStore(s => s.walletAddress)
 
   const lastTickTimeRef = useRef(0)
   const sessionStartedRef = useRef(false)
