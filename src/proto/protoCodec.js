@@ -184,6 +184,9 @@ export function encodeClientMessage(msg) {
     inner.writeFloat(3, msg.speed);
     inner.writeUint32(4, msg.level);
     inner.writeDouble(5, msg.timestamp);
+    inner.writeFloat(6, msg.x);
+    inner.writeFloat(7, msg.y);
+    inner.writeDouble(8, msg.z);
   } else if (msg.type === ClientMessageType.SUBMIT_SCORE) {
     inner.writeString(1, msg.sessionId);
     inner.writeString(2, msg.wallet);
@@ -227,13 +230,24 @@ export function decodeServerMessage(buffer) {
 
     if (type === ServerMessageType.SESSION_STARTED) {
       let sessionId = "";
+      let uid = "";
+      let ghostBytes = null;
       while (inner.hasMore()) {
         const tag = inner.readTag();
         if (!tag) break;
         if (tag.fieldNumber === 1 && tag.wireType === 2) sessionId = inner.readString();
+        else if (tag.fieldNumber === 2 && tag.wireType === 2) uid = inner.readString();
+        else if (tag.fieldNumber === 3 && tag.wireType === 2) ghostBytes = inner.readBytes();
         else inner.skip(tag.wireType);
       }
-      return { type, sessionId };
+      let ghostPath = null;
+      let ghostInterval = 250;
+      if (ghostBytes && ghostBytes.length > 4) {
+        const decoded = decodeGhostBlob(ghostBytes);
+        ghostPath = decoded.points;
+        ghostInterval = decoded.interval;
+      }
+      return { type, sessionId, uid, ghostPath, ghostInterval };
     } else if (type === ServerMessageType.LEADERBOARD) {
       let week = "";
       const entries = [];
@@ -312,4 +326,21 @@ export function decodeServerMessage(buffer) {
     console.error('[ProtoCodec] decodeServerMessage error:', e);
     return null;
   }
+}
+
+export function decodeGhostBlob(rawBytes) {
+  const buf = rawBytes.buffer || rawBytes
+  const dv = new DataView(buf, rawBytes.byteOffset, rawBytes.byteLength)
+  const interval = dv.getUint16(0)
+  const count = dv.getUint16(2)
+  const points = []
+  for (let i = 0; i < count; i++) {
+    const off = 4 + i * 10
+    points.push({
+      z: dv.getFloat32(off, true),
+      x: dv.getInt16(off + 4, true) / 109.2266,
+      y: dv.getFloat32(off + 6, true)
+    })
+  }
+  return { interval, points }
 }

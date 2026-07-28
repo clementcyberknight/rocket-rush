@@ -9,7 +9,7 @@ import { useStore } from '../state/useStore'
 export function getGuestId() {
   let guestId = localStorage.getItem('rocket_rush_guest_id')
   if (!guestId) {
-    guestId = `user_${Math.random().toString(36).slice(2, 10)}_${Date.now().toString(36)}`
+    guestId = `rush_${Math.random().toString(36).slice(2, 10)}_${Date.now().toString(36)}`
     localStorage.setItem('rocket_rush_guest_id', guestId)
   }
   return guestId
@@ -59,15 +59,24 @@ class LeaderboardService {
         switch (msg.type) {
           case ServerMessageType.SESSION_STARTED:
             this.sessionId = msg.sessionId
+            if (msg.uid) {
+              useStore.getState().setUid(msg.uid)
+            }
+            if (msg.ghostPath && msg.ghostPath.length > 0) {
+              useStore.getState().setGhostPath(msg.ghostPath, msg.ghostInterval || 250)
+            } else {
+              useStore.getState().setGhostPath(null, 250)
+            }
             useStore.getState().setSessionId(msg.sessionId)
             break
 
           case ServerMessageType.LEADERBOARD:
             useStore.getState().setLeaderboard(msg.entries, msg.week)
-            // Derive user rank and sync username from server (authoritative)
             {
-              const wallet = useStore.getState().walletAddress || getGuestId()
-              const userEntry = msg.entries.find(e => e.wallet === wallet)
+              const state = useStore.getState()
+              const uid = state.uid
+              const wallet = state.walletAddress || getGuestId()
+              const userEntry = msg.entries.find(e => e.wallet === uid || e.wallet === wallet)
               if (userEntry) {
                 useStore.getState().setUserRankFromLeaderboard(userEntry.rank, userEntry.score)
                 if (userEntry.username) {
@@ -88,7 +97,6 @@ class LeaderboardService {
 
           case ServerMessageType.USERNAME_UPDATED:
             if (msg.success) {
-              console.log('[Leaderboard] Username updated successfully:', msg.message)
               const confirmedUsername = msg.username || this.pendingUsername
               if (confirmedUsername) {
                 localStorage.setItem('rocket_rush_custom_username', confirmedUsername)
@@ -150,7 +158,7 @@ class LeaderboardService {
     }
   }
 
-  sendTick(score, speed, level) {
+  sendTick(score, speed, level, x, y, z) {
     if (!this.sessionId || !this.ws || this.ws.readyState !== WebSocket.OPEN) return
     const bytes = encodeClientMessage({
       type: ClientMessageType.GAME_TICK,
@@ -158,7 +166,10 @@ class LeaderboardService {
       score: Math.max(0, score),
       speed: Math.max(0, speed),
       level: Math.max(0, level),
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      x: x || 0,
+      y: y || 0,
+      z: z || 0
     })
     this.ws.send(bytes)
   }
@@ -265,7 +276,6 @@ class LeaderboardService {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       this.connect()
     }
-    console.log(`[Leaderboard] Merging guest scores from ${fromWallet} -> ${toWallet}`)
     const bytes = encodeClientMessage({
       type: ClientMessageType.MERGE_GUEST,
       fromWallet,

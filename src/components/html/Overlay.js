@@ -56,7 +56,7 @@ const Overlay = () => {
 
     useStore.getState().setWalletAddress(identifier)
 
-    if (primaryAddress && previousWallet && previousWallet !== primaryAddress && previousWallet.startsWith('user_')) {
+    if (primaryAddress && previousWallet && previousWallet !== primaryAddress && (previousWallet.startsWith('rush_') || previousWallet.startsWith('user_'))) {
       leaderboardService.mergeGuestScores(previousWallet, primaryAddress)
     }
 

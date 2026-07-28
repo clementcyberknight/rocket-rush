@@ -16,6 +16,7 @@ import Effects from './Effects'
 // State/dummy components
 import KeyboardControls from './KeyboardControls'
 import GameState from './GameState'
+import GhostShip from './GhostShip'
 import GlobalColor from './GlobalColor'
 import Sound from './Sound'
 
@@ -43,6 +44,7 @@ export default function CubeWorld({ color, bgColor }) {
           <Ship>
             {directionalLight.current && <primitive object={directionalLight.current.target} />}
           </Ship>
+          <GhostShip />
           <Walls />
           <Cubes />
           <CubeTunnel />

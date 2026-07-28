@@ -80,9 +80,16 @@ export default function GameState() {
       // Realtime Telemetry Anti-Cheat Tick (Sent every ~1.0 second)
       if (gameStarted && !mutation.gameOver) {
         const now = state.clock.getElapsedTime()
-        if (now - lastTickTimeRef.current >= 1.0) {
+        if (now - lastTickTimeRef.current >= 0.25) {
           lastTickTimeRef.current = now
-          leaderboardService.sendTick(mutation.score, mutation.gameSpeed, level)
+          leaderboardService.sendTick(
+            mutation.score,
+            mutation.gameSpeed,
+            level,
+            ship.current.position.x,
+            ship.current.position.y,
+            ship.current.position.z
+          )
         }
       }
 

@@ -2,23 +2,25 @@ import { useEffect, useRef, useState, memo, useMemo } from 'react'
 import { useStore } from '../../state/useStore'
 import '../../styles/gameMenu.css'
 
-function formatDisplayName(wallet, username, currentWallet, currentUsername) {
-  if (wallet === currentWallet && currentUsername) {
-    const u = currentUsername.trim()
-    return u.includes('@') ? u.split('@')[0] : u
-  }
+function formatDisplayName(wallet, username, currentWallet, currentUid, isMe, currentUsername) {
   if (username && typeof username === 'string' && username.trim().length > 0) {
     const u = username.trim()
     return u.includes('@') ? u.split('@')[0] : u
   }
-  if (!wallet || wallet.toLowerCase() === 'anonymous' || wallet.startsWith('guest_')) return 'ANONYMOUS PILOT'
+  if (isMe && currentUsername) {
+    const u = currentUsername.trim()
+    return u.includes('@') ? u.split('@')[0] : u
+  }
+  if (!wallet || wallet.toLowerCase() === 'anonymous') return 'ANONYMOUS PILOT'
+  if (wallet.startsWith('rush_') || wallet.startsWith('guest_') || wallet.startsWith('user_')) return 'ANONYMOUS PILOT'
   if (wallet.includes('@')) return wallet.split('@')[0]
-  if (wallet.length <= 10) return wallet
+  if (wallet.length <= 12) return wallet
   return `${wallet.slice(0, 4)}...${wallet.slice(-3)}`
 }
 
-const LeaderboardItem = memo(function LeaderboardItem({ entry, isClimbing, delta, currentWallet, currentUsername }) {
-  const name = useMemo(() => formatDisplayName(entry.wallet, entry.username, currentWallet, currentUsername), [entry.wallet, entry.username, currentWallet, currentUsername])
+const LeaderboardItem = memo(function LeaderboardItem({ entry, isClimbing, delta, currentWallet, currentUid, currentUsername }) {
+  const isMe = entry.wallet === currentUid || entry.wallet === currentWallet
+  const name = useMemo(() => formatDisplayName(entry.wallet, entry.username, currentWallet, currentUid, isMe, currentUsername), [entry.wallet, entry.username, currentWallet, currentUid, currentUsername])
   return (
     <div
       className={`leaderboard__item ${isClimbing ? 'leaderboard__item-climbing' : ''} ${entry.rank === 1 ? 'leaderboard__item-gold' : ''}`}
@@ -40,6 +42,7 @@ function AnimatedLeaderboard({ limit = 20, compact = false }) {
   const leaderboard = storeLeaderboard || []
   const userRank = useStore(s => s.userRank)
   const currentWallet = useStore(s => s.walletAddress)
+  const currentUid = useStore(s => s.uid)
   const currentUsername = useStore(s => s.username)
   const prevRanksRef = useRef(new Map())
   const [climbingWallets, setClimbingWallets] = useState(new Set())
@@ -104,6 +107,7 @@ function AnimatedLeaderboard({ limit = 20, compact = false }) {
                 isClimbing={isClimbing}
                 delta={delta}
                 currentWallet={currentWallet}
+                currentUid={currentUid}
                 currentUsername={currentUsername}
               />
             )
