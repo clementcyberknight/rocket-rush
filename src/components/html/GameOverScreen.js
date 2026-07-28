@@ -12,6 +12,7 @@ const GameOverScreen = () => {
   const score = useStore(s => s.score)
   const restartGame = useStore(s => s.restartGame)
   const userHighScore = useStore(s => s.userHighScore)
+  const userRank = useStore(s => s.userRank)
 
   const currentScore = Math.floor(score)
   const highScore = Math.floor(userHighScore)

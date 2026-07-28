@@ -87,6 +87,8 @@ const Overlay = () => {
       setIsChecking(false)
     }
   }, [usernameCheckResult])
+
+  const handleSaveUsername = (e) => {
     e.preventDefault()
     const clean = nameInput.trim()
     if (clean && usernameCheckResult?.available) {
