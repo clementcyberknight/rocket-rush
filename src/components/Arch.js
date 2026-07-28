@@ -39,7 +39,6 @@ export default function Arch() {
     }
 
 
-    // TODO: maybe set arches to globalcolor always
     if (mutation.colorLevel === 6) {
       arch1.current.material.color = mutation.globalColor
       arch2.current.material.color = mutation.globalColor
