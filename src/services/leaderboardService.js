@@ -87,6 +87,10 @@ class LeaderboardService {
               console.log('[Leaderboard] Username updated successfully:', msg.message)
               localStorage.setItem('rocket_rush_custom_username', this.pendingUsername)
               useStore.getState().setUsername(this.pendingUsername)
+              // Re-fetch leaderboard to ensure username appears
+              if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                this.getLeaderboard(20)
+              }
             } else {
               console.warn('[Leaderboard] Username update failed:', msg.message)
               useStore.getState().setUsername(this.previousUsername || null)

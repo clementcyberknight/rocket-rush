@@ -2,7 +2,11 @@ import { useEffect, useRef, useState, memo, useMemo } from 'react'
 import { useStore } from '../../state/useStore'
 import '../../styles/gameMenu.css'
 
-function formatDisplayName(wallet, username) {
+function formatDisplayName(wallet, username, currentWallet, currentUsername) {
+  if (wallet === currentWallet && currentUsername) {
+    const u = currentUsername.trim()
+    return u.includes('@') ? u.split('@')[0] : u
+  }
   if (username && typeof username === 'string' && username.trim().length > 0) {
     const u = username.trim()
     return u.includes('@') ? u.split('@')[0] : u
@@ -13,8 +17,8 @@ function formatDisplayName(wallet, username) {
   return `${wallet.slice(0, 4)}...${wallet.slice(-3)}`
 }
 
-const LeaderboardItem = memo(function LeaderboardItem({ entry, isClimbing, delta }) {
-  const name = useMemo(() => formatDisplayName(entry.wallet, entry.username), [entry.wallet, entry.username])
+const LeaderboardItem = memo(function LeaderboardItem({ entry, isClimbing, delta, currentWallet, currentUsername }) {
+  const name = useMemo(() => formatDisplayName(entry.wallet, entry.username, currentWallet, currentUsername), [entry.wallet, entry.username, currentWallet, currentUsername])
   return (
     <div
       className={`leaderboard__item ${isClimbing ? 'leaderboard__item-climbing' : ''} ${entry.rank === 1 ? 'leaderboard__item-gold' : ''}`}
@@ -35,6 +39,8 @@ function AnimatedLeaderboard({ limit = 20, compact = false }) {
   const storeLeaderboard = useStore(s => s.leaderboard)
   const leaderboard = storeLeaderboard || []
   const userRank = useStore(s => s.userRank)
+  const currentWallet = useStore(s => s.walletAddress)
+  const currentUsername = useStore(s => s.username)
   const prevRanksRef = useRef(new Map())
   const [climbingWallets, setClimbingWallets] = useState(new Set())
   const [rankDeltas, setRankDeltas] = useState(new Map())
@@ -97,6 +103,8 @@ function AnimatedLeaderboard({ limit = 20, compact = false }) {
                 entry={entry}
                 isClimbing={isClimbing}
                 delta={delta}
+                currentWallet={currentWallet}
+                currentUsername={currentUsername}
               />
             )
           })
