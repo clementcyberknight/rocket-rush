@@ -1,6 +1,10 @@
 import { useRef, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
+import { useGLTF } from '@react-three/drei'
 import { useStore } from '../state/useStore'
+import shipModel from '../models/spaceship.gltf'
+
+const dracoPath = `${process.env.PUBLIC_URL}/draco/`
 
 export default function GhostShip() {
   const ghostPath = useStore(s => s.ghostPath)
@@ -8,6 +12,8 @@ export default function GhostShip() {
   const gameSession = useStore(s => s.gameSession)
   const ghostRef = useRef()
   const startTimeRef = useRef(Date.now())
+
+  const { nodes } = useGLTF(shipModel, dracoPath)
 
   useEffect(() => {
     startTimeRef.current = Date.now()
@@ -41,18 +47,24 @@ export default function GhostShip() {
     )
   })
 
+  if (!nodes) return null
+
   return (
-    <group ref={ghostRef} visible={false}>
-      <mesh>
-        <boxGeometry args={[1.2, 1.2, 1.2]} />
-        <meshStandardMaterial
-          color="#555555"
-          transparent
-          opacity={0.25}
-          emissive="#333333"
-          emissiveIntensity={0.5}
-          depthWrite={false}
-        />
+    <group ref={ghostRef} visible={false} dispose={null}>
+      <mesh geometry={nodes.Ship_Body.geometry}>
+        <meshStandardMaterial color="#666666" transparent opacity={0.25} emissive="#333333" emissiveIntensity={0.4} depthWrite={false} />
+      </mesh>
+      <mesh geometry={nodes.Ship_Body_1.geometry}>
+        <meshStandardMaterial color="#666666" transparent opacity={0.25} emissive="#333333" emissiveIntensity={0.4} depthWrite={false} />
+      </mesh>
+      <mesh geometry={nodes.Ship_Body_2.geometry}>
+        <meshStandardMaterial color="#666666" transparent opacity={0.25} emissive="#333333" emissiveIntensity={0.4} depthWrite={false} />
+      </mesh>
+      <mesh geometry={nodes.Ship_Body_3.geometry}>
+        <meshStandardMaterial color="#666666" transparent opacity={0.25} emissive="#333333" emissiveIntensity={0.4} depthWrite={false} />
+      </mesh>
+      <mesh geometry={nodes.Ship_Body_4.geometry}>
+        <meshStandardMaterial color="#666666" transparent opacity={0.25} emissive="#333333" emissiveIntensity={0.4} depthWrite={false} />
       </mesh>
     </group>
   )
