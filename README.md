@@ -78,7 +78,7 @@ rocket-rush/
         ├── index.css           # Global styles
         ├── normalize.css       # CSS reset
         ├── gameMenu.css        # Overlay, leaderboard, username UI
-        └── hud.css             # HUD layout
+        └── hud.css             # HUD layout css
 ```
 
 ---
