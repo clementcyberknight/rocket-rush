@@ -44,35 +44,13 @@ export default function GhostShip() {
   return (
     <group ref={ghostRef} visible={false}>
       <mesh>
-        <boxGeometry args={[1.0, 0.6, 3.0]} />
+        <boxGeometry args={[1.2, 1.2, 1.2]} />
         <meshStandardMaterial
           color="#555555"
           transparent
-          opacity={0.3}
-          emissive="#222222"
-          emissiveIntensity={0.4}
-          depthWrite={false}
-        />
-      </mesh>
-      <mesh position={[0.8, 0, -0.3]}>
-        <boxGeometry args={[0.08, 0.04, 1.4]} />
-        <meshStandardMaterial
-          color="#555555"
-          transparent
-          opacity={0.3}
-          emissive="#222222"
-          emissiveIntensity={0.4}
-          depthWrite={false}
-        />
-      </mesh>
-      <mesh position={[-0.8, 0, -0.3]}>
-        <boxGeometry args={[0.08, 0.04, 1.4]} />
-        <meshStandardMaterial
-          color="#555555"
-          transparent
-          opacity={0.3}
-          emissive="#222222"
-          emissiveIntensity={0.4}
+          opacity={0.25}
+          emissive="#333333"
+          emissiveIntensity={0.5}
           depthWrite={false}
         />
       </mesh>
