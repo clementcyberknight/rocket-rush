@@ -45,7 +45,10 @@ const useStore = create(subscribeWithSelector((set, get) => {
     // Leaderboard & Wallet state
     walletAddress: null,
     username: localStorage.getItem('rocket_rush_custom_username') || null,
+    uid: null,
     sessionId: null,
+    ghostPath: null,
+    ghostInterval: 250,
     leaderboard: [],
     currentWeek: '',
     leaderboardVersion: 0,
@@ -54,8 +57,10 @@ const useStore = create(subscribeWithSelector((set, get) => {
     submissionValid: true,
 
     setWalletAddress: (addr) => set({ walletAddress: addr }),
+    setUid: (uid) => set({ uid }),
     setUsername: (name) => set({ username: name }),
     setSessionId: (id) => set({ sessionId: id }),
+    setGhostPath: (path, interval) => set({ ghostPath: path, ghostInterval: interval || 250 }),
     setLeaderboard: (leaderboard, week) => set(state => ({ leaderboard, currentWeek: week, leaderboardVersion: state.leaderboardVersion + 1 })),
     setUserRank: (rank, score, valid = true) => set(state => ({ userRank: rank, userHighScore: Math.max(state.userHighScore, score), submissionValid: valid })),
     setUserRankFromLeaderboard: (rank, score) => set(state => ({ userRank: rank, userHighScore: Math.max(state.userHighScore, score) })),
