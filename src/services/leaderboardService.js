@@ -64,6 +64,14 @@ class LeaderboardService {
 
           case ServerMessageType.LEADERBOARD:
             useStore.getState().setLeaderboard(msg.entries, msg.week)
+            // Derive user rank directly from leaderboard data (authoritative)
+            {
+              const wallet = useStore.getState().walletAddress || getGuestId()
+              const userEntry = msg.entries.find(e => e.wallet === wallet)
+              if (userEntry) {
+                useStore.getState().setUserRankFromLeaderboard(userEntry.rank, userEntry.score)
+              }
+            }
             break
 
           case ServerMessageType.SCORE_SUBMITTED:

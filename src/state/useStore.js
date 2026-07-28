@@ -55,7 +55,8 @@ const useStore = create(subscribeWithSelector((set, get) => {
     setUsername: (name) => set({ username: name }),
     setSessionId: (id) => set({ sessionId: id }),
     setLeaderboard: (leaderboard, week) => set(state => ({ leaderboard, currentWeek: week, leaderboardVersion: state.leaderboardVersion + 1 })),
-    setUserRank: (rank, score, valid = true) => set({ userRank: rank, userHighScore: score, submissionValid: valid }),
+    setUserRank: (rank, score, valid = true) => set(state => ({ userRank: rank, userHighScore: Math.max(state.userHighScore, score), submissionValid: valid })),
+    setUserRankFromLeaderboard: (rank, score) => set(state => ({ userRank: rank, userHighScore: Math.max(state.userHighScore, score) })),
     usernameUpdateResult: null,
     setUsernameUpdateResult: (success, message) => set({ usernameUpdateResult: { success, message, timestamp: Date.now() } }),
     usernameCheckResult: null,
@@ -79,7 +80,9 @@ const useStore = create(subscribeWithSelector((set, get) => {
         gameStarted: true,
         gameSession: state.gameSession + 1,
         isSpeedingUp: false,
-        controls: { left: false, right: false }
+        controls: { left: false, right: false },
+        userRank: 0,
+        submissionValid: true,
       }))
     }
   }
