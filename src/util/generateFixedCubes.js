@@ -13,7 +13,7 @@ export function makeWall(hasGap = true, gapSize = 3) {
   })
 
   if (hasGap) {
-    wallCoordinates.splice(segments / 2 - Math.floor(gapSize / 2), gapSize) // TODO: rethink this math when not tired
+    wallCoordinates.splice(segments / 2 - Math.floor(gapSize / 2), gapSize)
   }
 
   if (LEFT_BOUND < PLANE_SIZE / 2) {
@@ -26,14 +26,6 @@ export function makeWall(hasGap = true, gapSize = 3) {
 }
 
 function makeTunnel(tunnelLength = 10, gapSize = 3) {
-
-  // const tunnelCoordinates = [...Array(tunnelLength * 2)].map((cube, index) => {
-  //   return {
-  //     x: index % 2 === 0 ? CUBE_SIZE * 2 : -CUBE_SIZE * 2,
-  //     y: CUBE_SIZE / 2,
-  //     z: -(((segments / 2 - 2) * CUBE_SIZE) + (index * CUBE_SIZE * 0.7))
-  //   }
-  // })
 
   const coords = [
     { x: 40, y: 10, z: -450 },
@@ -80,7 +72,7 @@ function makeDiamond(size = 21, tunnelLength = 10) {
     }
   })
 
-  const innerSize = Math.floor(size / 2) - 2 // TODO: maybe remove -2
+  const innerSize = Math.floor(size / 2) - 2
 
   const innerLeftWall = [...Array(innerSize)].map((cube, index) => {
     return {
@@ -101,7 +93,7 @@ function makeDiamond(size = 21, tunnelLength = 10) {
   const middlePiece = { x: 0, y: CUBE_SIZE / 2, z: wallEndOffset - tunnelEndOffset - (Math.floor(size / 1.5) * CUBE_SIZE) + CUBE_SIZE }
 
   const firstDiamond = [...outerLeftWall, ...outerRightWall, middlePiece, ...innerLeftWall, ...innerRightWall]
-  const secondDiamond = firstDiamond.map((coordinates, index) => ({ ...coordinates, z: index >= 42 ? coordinates.z - 700 /* 735 */ : coordinates.z - (size * CUBE_SIZE * 1.75) }))
+  const secondDiamond = firstDiamond.map((coordinates, index) => ({ ...coordinates, z: index >= 42 ? coordinates.z - 700 : coordinates.z - (size * CUBE_SIZE * 1.75) }))
 
   const finalTunnel = [
     { x: 60, y: 10, z: -2045 },

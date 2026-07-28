@@ -1,7 +1,7 @@
 import { useProgress } from '@react-three/drei'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useDynamicContext, DynamicWidget } from '@dynamic-labs/sdk-react-core'
-//test
+
 import Loader from './CustomLoader'
 import AnimatedLeaderboard from './AnimatedLeaderboard'
 

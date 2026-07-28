@@ -97,7 +97,6 @@ class LeaderboardService {
 
           case ServerMessageType.USERNAME_UPDATED:
             if (msg.success) {
-              console.log('[Leaderboard] Username updated successfully:', msg.message)
               const confirmedUsername = msg.username || this.pendingUsername
               if (confirmedUsername) {
                 localStorage.setItem('rocket_rush_custom_username', confirmedUsername)
@@ -277,7 +276,6 @@ class LeaderboardService {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       this.connect()
     }
-    console.log(`[Leaderboard] Merging guest scores from ${fromWallet} -> ${toWallet}`)
     const bytes = encodeClientMessage({
       type: ClientMessageType.MERGE_GUEST,
       fromWallet,
