@@ -44,7 +44,7 @@ const useStore = create(subscribeWithSelector((set, get) => {
 
     // Leaderboard & Wallet state
     walletAddress: null,
-    username: null,
+    username: localStorage.getItem('rocket_rush_custom_username') || null,
     sessionId: null,
     leaderboard: [],
     currentWeek: '',

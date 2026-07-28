@@ -65,6 +65,13 @@ const Overlay = () => {
       var saved = window.localStorage.getItem('rocket_rush_custom_username')
       if (!saved) {
         useStore.getState().setUsername(derived)
+      } else {
+        useStore.getState().setUsername(saved)
+      }
+    } else {
+      var savedName = window.localStorage.getItem('rocket_rush_custom_username')
+      if (savedName) {
+        useStore.getState().setUsername(savedName)
       }
     }
   }, [primaryWallet && primaryWallet.address])

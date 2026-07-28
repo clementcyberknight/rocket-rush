@@ -64,12 +64,16 @@ class LeaderboardService {
 
           case ServerMessageType.LEADERBOARD:
             useStore.getState().setLeaderboard(msg.entries, msg.week)
-            // Derive user rank directly from leaderboard data (authoritative)
+            // Derive user rank and sync username from server (authoritative)
             {
               const wallet = useStore.getState().walletAddress || getGuestId()
               const userEntry = msg.entries.find(e => e.wallet === wallet)
               if (userEntry) {
                 useStore.getState().setUserRankFromLeaderboard(userEntry.rank, userEntry.score)
+                if (userEntry.username) {
+                  localStorage.setItem('rocket_rush_custom_username', userEntry.username)
+                  useStore.getState().setUsername(userEntry.username)
+                }
               }
             }
             break
@@ -85,8 +89,11 @@ class LeaderboardService {
           case ServerMessageType.USERNAME_UPDATED:
             if (msg.success) {
               console.log('[Leaderboard] Username updated successfully:', msg.message)
-              localStorage.setItem('rocket_rush_custom_username', this.pendingUsername)
-              useStore.getState().setUsername(this.pendingUsername)
+              const confirmedUsername = msg.username || this.pendingUsername
+              if (confirmedUsername) {
+                localStorage.setItem('rocket_rush_custom_username', confirmedUsername)
+                useStore.getState().setUsername(confirmedUsername)
+              }
               // Re-fetch leaderboard to ensure username appears
               if (this.ws && this.ws.readyState === WebSocket.OPEN) {
                 this.getLeaderboard(20)

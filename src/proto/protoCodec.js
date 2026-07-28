@@ -286,15 +286,16 @@ export function decodeServerMessage(buffer) {
       }
       return { type, message };
     } else if (type === ServerMessageType.USERNAME_UPDATED) {
-      let success = false, message = "";
+      let success = false, message = "", username;
       while (inner.hasMore()) {
         const tag = inner.readTag();
         if (!tag) break;
         if (tag.fieldNumber === 1 && tag.wireType === 0) success = inner.readVarint() === 1;
         else if (tag.fieldNumber === 2 && tag.wireType === 2) message = inner.readString();
+        else if (tag.fieldNumber === 3 && tag.wireType === 2) username = inner.readString();
         else inner.skip(tag.wireType);
       }
-      return { type, success, message };
+      return { type, success, message, username };
     } else if (type === ServerMessageType.USERNAME_CHECKED) {
       let available = false, error;
       while (inner.hasMore()) {
