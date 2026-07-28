@@ -44,6 +44,7 @@ export const COLORS = [
     hex: '#26a300',
     three: new THREE.Color(0x26a300) // 0x2ec200
   },
+
   {
     name: 'blue',
     hex: '#217aff',
