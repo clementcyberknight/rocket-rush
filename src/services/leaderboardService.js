@@ -6,7 +6,7 @@ import {
 } from '../proto/protoCodec'
 import { useStore } from '../state/useStore'
 
-function getGuestId() {
+export function getGuestId() {
   let guestId = localStorage.getItem('rocket_rush_guest_id')
   if (!guestId) {
     guestId = `user_${Math.random().toString(36).slice(2, 10)}_${Date.now().toString(36)}`
@@ -78,13 +78,18 @@ class LeaderboardService {
             if (msg.success) {
               console.log('[Leaderboard] Username updated successfully:', msg.message)
               localStorage.setItem('rocket_rush_custom_username', this.pendingUsername)
+              useStore.getState().setUsername(this.pendingUsername)
             } else {
               console.warn('[Leaderboard] Username update failed:', msg.message)
-              useStore.getState().setUsername(this.previousUsername)
+              useStore.getState().setUsername(this.previousUsername || null)
             }
             this.pendingUsername = null
             this.previousUsername = null
             useStore.getState().setUsernameUpdateResult(msg.success, msg.message)
+            break
+
+          case ServerMessageType.USERNAME_CHECKED:
+            useStore.getState().setUsernameCheckResult(msg.available, msg.error)
             break
 
           default:
@@ -204,7 +209,26 @@ class LeaderboardService {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(bytes)
     }
-    useStore.getState().setUsername(cleanName)
+  }
+
+  checkUsername(username, wallet) {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      this.connect()
+      return
+    }
+    const cleanName = username ? username.trim() : ''
+    if (!cleanName) {
+      useStore.getState().setUsernameCheckResult(false, 'Username cannot be empty')
+      return
+    }
+    const bytes = encodeClientMessage({
+      type: ClientMessageType.CHECK_USERNAME,
+      username: cleanName,
+      wallet: wallet || useStore.getState().walletAddress || getGuestId()
+    })
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(bytes)
+    }
   }
 
   mergeGuestScores(fromWallet, toWallet) {

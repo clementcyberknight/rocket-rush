@@ -378,6 +378,57 @@
   cursor: pointer;
 }
 
+.game__username-input-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  position: relative;
+}
+
+.game__username-input.valid {
+  border-color: #00ff88;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
+}
+
+.game__username-input.invalid {
+  border-color: #ff4444;
+  box-shadow: 0 0 10px rgba(255, 68, 68, 0.4);
+}
+
+.game__username-checking {
+  font-family: 'Commando', monospace;
+  font-size: 0.7rem;
+  color: #aaaa00;
+  animation: blink 0.8s infinite;
+}
+
+.game__username-available {
+  font-family: 'Commando', monospace;
+  font-size: 0.65rem;
+  color: #00ff88;
+  text-shadow: 0 0 6px rgba(0, 255, 136, 0.5);
+}
+
+.game__username-taken {
+  font-family: 'Commando', monospace;
+  font-size: 0.6rem;
+  color: #ff4444;
+  text-shadow: 0 0 6px rgba(255, 68, 68, 0.4);
+  max-width: 180px;
+  word-wrap: break-word;
+}
+
+.game__username-save-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
 .game__menu-button:hover {
   color: #FFF;
   cursor: pointer;

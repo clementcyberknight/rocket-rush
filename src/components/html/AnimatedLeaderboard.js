@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, memo, useMemo } from 'react'
 import { useStore } from '../../state/useStore'
 import '../../styles/gameMenu.css'
 
@@ -13,13 +13,33 @@ function formatDisplayName(wallet, username) {
   return `${wallet.slice(0, 4)}...${wallet.slice(-3)}`
 }
 
-export default function AnimatedLeaderboard({ limit = 20, compact = false }) {
+const LeaderboardItem = memo(function LeaderboardItem({ entry, isClimbing, delta }) {
+  const name = useMemo(() => formatDisplayName(entry.wallet, entry.username), [entry.wallet, entry.username])
+  return (
+    <div
+      className={`leaderboard__item ${isClimbing ? 'leaderboard__item-climbing' : ''} ${entry.rank === 1 ? 'leaderboard__item-gold' : ''}`}
+    >
+      <div className="leaderboard__rank-box">
+        <span className="leaderboard__rank">#{entry.rank}</span>
+        {isClimbing && delta && (
+          <span className="leaderboard__climb-badge">{'\u25B2'} +{delta}</span>
+        )}
+      </div>
+      <span className="leaderboard__wallet">{name}</span>
+      <span className="leaderboard__score">{entry.score.toFixed(0)}</span>
+    </div>
+  )
+})
+
+function AnimatedLeaderboard({ limit = 20, compact = false }) {
   const storeLeaderboard = useStore(s => s.leaderboard)
   const leaderboard = storeLeaderboard || []
   const userRank = useStore(s => s.userRank)
   const prevRanksRef = useRef(new Map())
   const [climbingWallets, setClimbingWallets] = useState(new Set())
   const [rankDeltas, setRankDeltas] = useState(new Map())
+
+  const displayedEntries = useMemo(() => leaderboard.slice(0, limit), [leaderboard, limit])
 
   useEffect(() => {
     if (!storeLeaderboard || !storeLeaderboard.length) return
@@ -33,7 +53,6 @@ export default function AnimatedLeaderboard({ limit = 20, compact = false }) {
       const prevRank = prevRanksRef.current.get(entry.wallet)
 
       if (prevRank !== undefined && entry.rank < prevRank) {
-        // Player climbed up!
         newClimbing.add(entry.wallet)
         newDeltas.set(entry.wallet, prevRank - entry.rank)
       }
@@ -45,7 +64,6 @@ export default function AnimatedLeaderboard({ limit = 20, compact = false }) {
       setClimbingWallets(newClimbing)
       setRankDeltas(newDeltas)
 
-      // Clear animation pulse after 2.5 seconds
       const timer = setTimeout(() => {
         setClimbingWallets(new Set())
         setRankDeltas(new Map())
@@ -67,25 +85,19 @@ export default function AnimatedLeaderboard({ limit = 20, compact = false }) {
       </div>
 
       <div className="leaderboard__list">
-        {leaderboard.length > 0 ? (
-          leaderboard.slice(0, limit).map((entry) => {
+        {displayedEntries.length > 0 ? (
+          displayedEntries.map((entry, idx) => {
+            const key = `${entry.wallet}-${entry.rank}-${idx}`
             const isClimbing = climbingWallets.has(entry.wallet)
             const delta = rankDeltas.get(entry.wallet)
 
             return (
-              <div
-                key={`${entry.wallet}`}
-                className={`leaderboard__item ${isClimbing ? 'leaderboard__item-climbing' : ''} ${entry.rank === 1 ? 'leaderboard__item-gold' : ''}`}
-              >
-                <div className="leaderboard__rank-box">
-                  <span className="leaderboard__rank">#{entry.rank}</span>
-                  {isClimbing && delta && (
-                    <span className="leaderboard__climb-badge">▲ +{delta}</span>
-                  )}
-                </div>
-                <span className="leaderboard__wallet">{formatDisplayName(entry.wallet, entry.username)}</span>
-                <span className="leaderboard__score">{entry.score.toFixed(0)}</span>
-              </div>
+              <LeaderboardItem
+                key={key}
+                entry={entry}
+                isClimbing={isClimbing}
+                delta={delta}
+              />
             )
           })
         ) : (
@@ -104,3 +116,5 @@ export default function AnimatedLeaderboard({ limit = 20, compact = false }) {
     </div>
   )
 }
+
+export default memo(AnimatedLeaderboard)

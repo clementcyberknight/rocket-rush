@@ -57,6 +57,8 @@ const useStore = create(subscribeWithSelector((set, get) => {
     setUserRank: (rank, score, valid = true) => set({ userRank: rank, userHighScore: score, submissionValid: valid }),
     usernameUpdateResult: null,
     setUsernameUpdateResult: (success, message) => set({ usernameUpdateResult: { success, message, timestamp: Date.now() } }),
+    usernameCheckResult: null,
+    setUsernameCheckResult: (available, error) => set({ usernameCheckResult: { available, error, timestamp: Date.now() } }),
 
     restartGame: () => {
       mutation.gameOver = false

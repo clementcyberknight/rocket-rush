@@ -1,5 +1,5 @@
 import { useProgress } from '@react-three/drei'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useDynamicContext, DynamicWidget } from '@dynamic-labs/sdk-react-core'
 
 import Loader from './CustomLoader'
@@ -8,6 +8,7 @@ import AnimatedLeaderboard from './AnimatedLeaderboard'
 import '../../styles/gameMenu.css'
 
 import { useStore } from '../../state/useStore'
+import { leaderboardService, getGuestId } from '../../services/leaderboardService'
 
 const Overlay = () => {
   const [shown, setShown] = useState(true)
@@ -27,10 +28,13 @@ const Overlay = () => {
   const [isEditingName, setIsEditingName] = useState(false)
   const [nameInput, setNameInput] = useState('')
   const [usernameMsg, setUsernameMsg] = useState(null)
+  const [isChecking, setIsChecking] = useState(false)
+  const debounceRef = useRef(null)
 
   const currentUsername = useStore(s => s.username)
   const walletAddress = useStore(s => s.walletAddress)
   const usernameUpdateResult = useStore(s => s.usernameUpdateResult)
+  const usernameCheckResult = useStore(s => s.usernameCheckResult)
 
   const { primaryWallet, handleLogOut } = useDynamicContext()
 
@@ -43,12 +47,7 @@ const Overlay = () => {
   }, [usernameUpdateResult])
 
   useEffect(() => {
-    var guestId = window.localStorage.getItem('rocket_rush_guest_id')
-    if (!guestId) {
-      guestId = 'user_' + Math.random().toString(36).slice(2, 10) + '_' + Date.now().toString(36)
-      window.localStorage.setItem('rocket_rush_guest_id', guestId)
-    }
-
+    const guestId = getGuestId()
     var primaryAddress = primaryWallet && primaryWallet.address
     var identifier = primaryAddress || guestId
 
@@ -57,7 +56,6 @@ const Overlay = () => {
     useStore.getState().setWalletAddress(identifier)
 
     if (primaryAddress && previousWallet && previousWallet !== primaryAddress && previousWallet.startsWith('user_')) {
-      const { leaderboardService } = require('../../services/leaderboardService')
       leaderboardService.mergeGuestScores(previousWallet, primaryAddress)
     }
 
@@ -70,11 +68,28 @@ const Overlay = () => {
     }
   }, [primaryWallet && primaryWallet.address])
 
-  const handleSaveUsername = (e) => {
+  const checkUsernameDebounced = useCallback((name) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    const clean = name.trim()
+    if (!clean || clean.length < 3) {
+      useStore.getState().setUsernameCheckResult(false, null)
+      setIsChecking(false)
+      return
+    }
+    setIsChecking(true)
+    debounceRef.current = setTimeout(() => {
+      leaderboardService.checkUsername(clean, walletAddress)
+    }, 500)
+  }, [walletAddress])
+
+  useEffect(() => {
+    if (usernameCheckResult) {
+      setIsChecking(false)
+    }
+  }, [usernameCheckResult])
     e.preventDefault()
     const clean = nameInput.trim()
-    if (clean) {
-      const { leaderboardService } = require('../../services/leaderboardService')
+    if (clean && usernameCheckResult?.available) {
       leaderboardService.updateUsername(clean, walletAddress)
     }
     setIsEditingName(false)
@@ -154,17 +169,38 @@ const Overlay = () => {
                 )}
                 {isEditingName ? (
                   <form className="game__username-form" onSubmit={handleSaveUsername}>
-                    <input
-                      type="text"
-                      className="game__username-input"
-                      value={nameInput}
-                      onChange={(e) => setNameInput(e.target.value)}
-                      placeholder="CALLSIGN..."
-                      maxLength={16}
-                      autoFocus
-                    />
-                    <button type="submit" className="game__username-save-btn">SAVE 🚀</button>
-                    <button type="button" className="game__username-cancel-btn" onClick={() => setIsEditingName(false)}>✕</button>
+                    <div className="game__username-input-wrap">
+                      <input
+                        type="text"
+                        className={`game__username-input ${usernameCheckResult ? (usernameCheckResult.available ? 'valid' : 'invalid') : ''}`}
+                        value={nameInput}
+                        onChange={(e) => {
+                          const val = e.target.value.slice(0, 16)
+                          setNameInput(val)
+                          checkUsernameDebounced(val)
+                        }}
+                        placeholder="CALLSIGN..."
+                        maxLength={16}
+                        autoFocus
+                      />
+                      {isChecking && (
+                        <span className="game__username-checking">...</span>
+                      )}
+                      {!isChecking && usernameCheckResult && usernameCheckResult.available && (
+                        <span className="game__username-available">Available</span>
+                      )}
+                      {!isChecking && usernameCheckResult && !usernameCheckResult.available && usernameCheckResult.error && (
+                        <span className="game__username-taken">{usernameCheckResult.error}</span>
+                      )}
+                    </div>
+                    <button
+                      type="submit"
+                      className="game__username-save-btn"
+                      disabled={!usernameCheckResult?.available || isChecking}
+                    >
+                      SAVE 🚀
+                    </button>
+                    <button type="button" className="game__username-cancel-btn" onClick={() => { setIsEditingName(false); useStore.getState().setUsernameCheckResult(false, null); }}>✕</button>
                   </form>
                 ) : (
                   <div className="game__username-display">
