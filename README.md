@@ -1,6 +1,6 @@
 # Rocket Rush
 
-A browser-based 3D hyper-casual arcade tunnel runner built with React, Three.js, React Three Fiber, and a real-time WebSocket backend.
+A browser-based 3D hyper-casual arcade tunnel runner built with React, Three.js, React Three Fiber, and a real-time bun WebSocket backend.
 
 Dodge obstacles at increasing speeds through a neon synthwave tunnel. Set personal bests, race your ghost, and climb the global leaderboard.
 
