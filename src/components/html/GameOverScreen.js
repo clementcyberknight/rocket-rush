@@ -13,6 +13,7 @@ const GameOverScreen = () => {
   const restartGame = useStore(s => s.restartGame)
   const userHighScore = useStore(s => s.userHighScore)
   const userRank = useStore(s => s.userRank)
+  const leaderboardVersion = useStore(s => s.leaderboardVersion)
 
   const currentScore = Math.floor(score)
   const highScore = Math.floor(userHighScore)
@@ -64,7 +65,7 @@ const GameOverScreen = () => {
             )}
           </div>
           <div className="game__score-right">
-            <AnimatedLeaderboard limit={20} compact={true} />
+            <AnimatedLeaderboard limit={20} compact={true} key={`lb-${leaderboardVersion}`} />
           </div>
         </div>
         <button onClick={handleRestart} className="game__menu-button">PLAY AGAIN</button>

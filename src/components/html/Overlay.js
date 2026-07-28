@@ -35,6 +35,7 @@ const Overlay = () => {
   const walletAddress = useStore(s => s.walletAddress)
   const usernameUpdateResult = useStore(s => s.usernameUpdateResult)
   const usernameCheckResult = useStore(s => s.usernameCheckResult)
+  const leaderboardVersion = useStore(s => s.leaderboardVersion)
 
   const { primaryWallet, handleLogOut } = useDynamicContext()
 
@@ -221,7 +222,7 @@ const Overlay = () => {
 
               {showLeaderboard && (
                 <div className="game__leaderboard-panel">
-                  <AnimatedLeaderboard limit={20} compact={true} />
+                  <AnimatedLeaderboard limit={20} compact={true} key={`lb-menu-${leaderboardVersion}`} />
                 </div>
               )}
 

@@ -147,7 +147,6 @@ class LeaderboardService {
   submitScore(score, wallet, username) {
     const sendScore = () => {
       if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-        console.warn('[Leaderboard] WS not open for score submission, retrying...')
         return false
       }
       const id = wallet || getGuestId()
@@ -169,7 +168,6 @@ class LeaderboardService {
     }
 
     if (!sendScore()) {
-      // WS not open — reconnect and retry after connection opens
       this.connect()
       let retries = 0
       const retryInterval = setInterval(() => {
@@ -182,6 +180,18 @@ class LeaderboardService {
         }
       }, 1000)
     }
+
+    // Defensive: force-refresh leaderboard after delay to ensure UI updates
+    setTimeout(() => {
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        this.getLeaderboard(20)
+      }
+    }, 1500)
+    setTimeout(() => {
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        this.getLeaderboard(20)
+      }
+    }, 4000)
   }
 
   getLeaderboard(limit = 20) {
