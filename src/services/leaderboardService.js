@@ -119,6 +119,63 @@ class LeaderboardService {
             useStore.getState().setUsernameCheckResult(msg.available, msg.error)
             break
 
+          case ServerMessageType.ROOM_CREATED:
+            useStore.getState().setRoomCode(msg.code)
+            useStore.getState().setRoomSeed(msg.seed)
+            useStore.getState().setIsRoomHost(true)
+            useStore.getState().setRoomStatus("lobby")
+            useStore.getState().setRoomPlayers([])
+            break
+
+          case ServerMessageType.ROOM_JOINED:
+            useStore.getState().setRoomCode(msg.code)
+            useStore.getState().setRoomSeed(msg.seed)
+            useStore.getState().setRoomStatus("lobby")
+            useStore.getState().setRoomPlayers(msg.players || [])
+            useStore.getState().setIsRoomHost(false)
+            break
+
+          case ServerMessageType.ROOM_PLAYER_JOINED: {
+            const p = useStore.getState().roomPlayers || []
+            if (!p.find(x => x.uid === msg.uid)) {
+              useStore.getState().setRoomPlayers([...p, { uid: msg.uid, username: msg.username, isHost: false, alive: true, x: 0, y: 0, z: 0, score: 0, level: 0 }])
+            }
+            break
+          }
+
+          case ServerMessageType.ROOM_PLAYER_LEFT: {
+            const pl = useStore.getState().roomPlayers || []
+            useStore.getState().setRoomPlayers(pl.filter(x => x.uid !== msg.uid))
+            break
+          }
+
+          case ServerMessageType.ROOM_PLAYERS:
+            useStore.getState().setRoomPlayers(msg.players || [])
+            break
+
+          case ServerMessageType.ROOM_COUNTDOWN:
+            useStore.getState().setRoomStatus("countdown")
+            break
+
+          case ServerMessageType.ROOM_STARTED:
+            useStore.getState().setRoomStatus("playing")
+            break
+
+          case ServerMessageType.ROOM_PLAYER_DIED: {
+            const all = useStore.getState().roomPlayers || []
+            useStore.getState().setRoomPlayers(all.map(p => p.uid === msg.uid ? { ...p, alive: false } : p))
+            break
+          }
+
+          case ServerMessageType.ROOM_GAME_OVER:
+            useStore.getState().setRoomRankings(msg.rankings || [])
+            useStore.getState().setRoomStatus("finished")
+            break
+
+          case ServerMessageType.ROOM_ERROR:
+            console.warn('[Room]', msg.message)
+            break
+
           default:
             break
         }
@@ -284,6 +341,26 @@ class LeaderboardService {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(bytes)
     }
+  }
+
+  createRoom() {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) { this.connect(); return }
+    this.ws.send(encodeClientMessage({ type: ClientMessageType.CREATE_ROOM }))
+  }
+
+  joinRoom(code) {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) { this.connect(); return }
+    this.ws.send(encodeClientMessage({ type: ClientMessageType.JOIN_ROOM, code }))
+  }
+
+  leaveRoom() {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return
+    this.ws.send(encodeClientMessage({ type: ClientMessageType.LEAVE_ROOM }))
+  }
+
+  startRoom() {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return
+    this.ws.send(encodeClientMessage({ type: ClientMessageType.START_ROOM }))
   }
 }
 

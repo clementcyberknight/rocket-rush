@@ -17,12 +17,14 @@ import Effects from './Effects'
 import KeyboardControls from './KeyboardControls'
 import GameState from './GameState'
 import GhostShip from './GhostShip'
+import MultiplayerGhosts from './MultiplayerGhosts'
 import GlobalColor from './GlobalColor'
 import Sound from './Sound'
 
 // HTML components
 import Overlay from './html/Overlay'
 import Hud from './html/Hud'
+import RoomRanking from './RoomRanking'
 import GameOverScreen from './html/GameOverScreen'
 
 export default function CubeWorld({ color, bgColor }) {
@@ -45,6 +47,7 @@ export default function CubeWorld({ color, bgColor }) {
             {directionalLight.current && <primitive object={directionalLight.current.target} />}
           </Ship>
           <GhostShip />
+          <MultiplayerGhosts />
           <Walls />
           <Cubes />
           <CubeTunnel />
@@ -57,6 +60,7 @@ export default function CubeWorld({ color, bgColor }) {
         </Suspense>
       </Canvas>
       <Hud />
+      <RoomRanking />
       <GameOverScreen />
       <Overlay />
     </>

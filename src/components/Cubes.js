@@ -7,7 +7,11 @@ import { useStore, mutation } from '../state/useStore'
 
 import randomInRange from '../util/randomInRange'
 import distance2D from '../util/distance2D'
+import createSeededRNG from '../util/seededRandom'
 
+function seededRandomInRange(from, to, rng) {
+  return Math.floor(rng() * (to - from + 1)) + from
+}
 const negativeBound = LEFT_BOUND + WALL_RADIUS / 2
 const positiveBound = RIGHT_BOUND - WALL_RADIUS / 2
 
@@ -17,20 +21,20 @@ export default function InstancedCubes() {
 
   const ship = useStore(s => s.ship)
   const level = useStore(s => s.level)
+  const roomRNG = useStore(s => s.roomRNG)
 
   const dummy = useMemo(() => new Object3D(), [])
   const cubes = useMemo(() => {
-    // Setup initial cube positions
     const temp = []
+    const rng = roomRNG || createSeededRNG(42)
     for (let i = 0; i < CUBE_AMOUNT; i++) {
-      const x = randomInRange(negativeBound, positiveBound)
+      const x = seededRandomInRange(negativeBound, positiveBound, rng)
       const y = 10
-      const z = -900 + randomInRange(-400, 400)
-
+      const z = -900 + seededRandomInRange(-400, 400, rng)
       temp.push({ x, y, z })
     }
     return temp
-  }, [])
+  }, [roomRNG])
 
   const diamondStart = useMemo(() => -(level * PLANE_SIZE * LEVEL_SIZE) - PLANE_SIZE * (LEVEL_SIZE - 2.6), [level])
   const diamondEnd = useMemo(() => -(level * PLANE_SIZE * LEVEL_SIZE) - PLANE_SIZE * (LEVEL_SIZE), [level])
@@ -57,14 +61,15 @@ export default function InstancedCubes() {
         }
 
         if (cube.z - ship.current.position.z > 15) {
+          const rng = roomRNG || Math.random
           if (isOutsideDiamond) {
-            cube.z = ship.current.position.z - PLANE_SIZE + randomInRange(-200, 0)
+            cube.z = ship.current.position.z - PLANE_SIZE + seededRandomInRange(-200, 0, rng)
             cube.y = -CUBE_SIZE
-            cube.x = randomInRange(negativeBound, positiveBound)
+            cube.x = seededRandomInRange(negativeBound, positiveBound, rng)
           } else {
-            cube.z = ship.current.position.z - (PLANE_SIZE * 3.1) + randomInRange(-200, 0)
+            cube.z = ship.current.position.z - (PLANE_SIZE * 3.1) + seededRandomInRange(-200, 0, rng)
             cube.y = -CUBE_SIZE
-            cube.x = randomInRange(negativeBound, positiveBound)
+            cube.x = seededRandomInRange(negativeBound, positiveBound, rng)
           }
         }
 

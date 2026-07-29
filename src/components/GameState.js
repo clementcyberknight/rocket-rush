@@ -4,6 +4,7 @@ import { useFrame } from '@react-three/fiber'
 import { useStore, mutation } from '../state/useStore'
 import { INITIAL_GAME_SPEED, PLANE_SIZE, LEVEL_SIZE } from '../constants'
 import { leaderboardService } from '../services/leaderboardService'
+import createSeededRNG from '../util/seededRandom'
 
 const shipSelector = s => s.ship
 const setScoreSelector = s => s.setScore
@@ -22,6 +23,8 @@ export default function GameState() {
   const level = useStore(s => s.level)
   const walletAddress = useStore(s => s.walletAddress)
   const username = useStore(s => s.username)
+  const roomStatus = useStore(s => s.roomStatus)
+  const roomSeed = useStore(s => s.roomSeed)
 
   const lastTickTimeRef = useRef(0)
   const sessionStartedRef = useRef(false)
@@ -37,15 +40,30 @@ export default function GameState() {
 
   const scoreSubmittedRef = useRef(false)
 
-  // Handle Game Session Start
+  // Auto-start game when room countdown finishes
+  useEffect(() => {
+    if (roomStatus === 'playing' && !gameStarted && !gameOver) {
+      useStore.getState().setGameStarted(true)
+    }
+  }, [roomStatus, gameStarted, gameOver])
+
+  // Set up seeded RNG when room is active
+  useEffect(() => {
+    if (roomSeed != null && roomStatus === 'playing') {
+      useStore.getState().setRoomRNG(createSeededRNG(roomSeed))
+    } else if (!roomSeed || roomStatus === 'finished') {
+      useStore.getState().setRoomRNG(null)
+    }
+  }, [roomSeed, roomStatus])
   useEffect(() => {
     if (gameStarted && !gameOver) {
       mutation.desiredSpeed = INITIAL_GAME_SPEED
       sessionStartedRef.current = true
       scoreSubmittedRef.current = false
       leaderboardService.startSession(walletAddress, username)
+      if (roomStatus === 'playing') useStore.getState().setIsSpectating(false)
     }
-  }, [gameStarted, gameOver, walletAddress, username])
+  }, [gameStarted, gameOver, walletAddress, username, roomStatus])
 
   // Handle Game Over Score Submission
   useEffect(() => {
@@ -54,8 +72,9 @@ export default function GameState() {
       sessionStartedRef.current = false
       const finalScore = Math.max(0, mutation.score)
       leaderboardService.submitScore(finalScore, walletAddress, username)
+      if (roomStatus === 'playing') useStore.getState().setIsSpectating(true)
     }
-  }, [gameOver, walletAddress, username])
+  }, [gameOver, walletAddress, username, roomStatus])
 
   useFrame((state, delta) => {
     // acceleration logic

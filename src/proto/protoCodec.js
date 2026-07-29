@@ -158,6 +158,10 @@ export const ClientMessageType = {
   UPDATE_USERNAME: 5,
   MERGE_GUEST: 6,
   CHECK_USERNAME: 7,
+  CREATE_ROOM: 8,
+  JOIN_ROOM: 9,
+  LEAVE_ROOM: 10,
+  START_ROOM: 11,
 };
 
 // Server Message Types
@@ -168,6 +172,16 @@ export const ServerMessageType = {
   ERROR: 4,
   USERNAME_UPDATED: 5,
   USERNAME_CHECKED: 6,
+  ROOM_CREATED: 7,
+  ROOM_JOINED: 8,
+  ROOM_PLAYER_JOINED: 9,
+  ROOM_PLAYER_LEFT: 10,
+  ROOM_PLAYERS: 11,
+  ROOM_COUNTDOWN: 12,
+  ROOM_STARTED: 13,
+  ROOM_PLAYER_DIED: 14,
+  ROOM_GAME_OVER: 15,
+  ROOM_ERROR: 16,
 };
 
 export function encodeClientMessage(msg) {
@@ -204,6 +218,11 @@ export function encodeClientMessage(msg) {
   } else if (msg.type === ClientMessageType.CHECK_USERNAME) {
     inner.writeString(1, msg.username);
     inner.writeString(2, msg.wallet);
+  } else if (msg.type === ClientMessageType.CREATE_ROOM) {
+  } else if (msg.type === ClientMessageType.JOIN_ROOM) {
+    inner.writeString(1, msg.code);
+  } else if (msg.type === ClientMessageType.LEAVE_ROOM) {
+  } else if (msg.type === ClientMessageType.START_ROOM) {
   }
 
   outer.writeBytes(2, inner.finish());
@@ -320,6 +339,139 @@ export function decodeServerMessage(buffer) {
         else inner.skip(tag.wireType);
       }
       return { type, available, error };
+    } else if (type === ServerMessageType.ROOM_CREATED) {
+      let code = "", seed = 0;
+      while (inner.hasMore()) {
+        const tag = inner.readTag();
+        if (!tag) break;
+        if (tag.fieldNumber === 1 && tag.wireType === 2) code = inner.readString();
+        else if (tag.fieldNumber === 2 && tag.wireType === 0) seed = inner.readVarint();
+        else inner.skip(tag.wireType);
+      }
+      return { type, code, seed };
+    } else if (type === ServerMessageType.ROOM_JOINED) {
+      let code = "", seed = 0;
+      const players = [];
+      while (inner.hasMore()) {
+        const tag = inner.readTag();
+        if (!tag) break;
+        if (tag.fieldNumber === 1 && tag.wireType === 2) code = inner.readString();
+        else if (tag.fieldNumber === 2 && tag.wireType === 0) seed = inner.readVarint();
+        else if (tag.fieldNumber === 3 && tag.wireType === 2) {
+          const itemBytes = inner.readBytes();
+          const ir = new BinaryReader(itemBytes);
+          let uid = "", username = null, isHost = false;
+          while (ir.hasMore()) {
+            const it = ir.readTag();
+            if (!it) break;
+            if (it.fieldNumber === 1 && it.wireType === 2) uid = ir.readString();
+            else if (it.fieldNumber === 2 && it.wireType === 2) username = ir.readString();
+            else if (it.fieldNumber === 3 && it.wireType === 0) isHost = ir.readVarint() === 1;
+            else ir.skip(it.wireType);
+          }
+          players.push({ uid, username, isHost });
+        }
+        else inner.skip(tag.wireType);
+      }
+      return { type, code, seed, players };
+    } else if (type === ServerMessageType.ROOM_PLAYER_JOINED) {
+      let uid = "", username = null;
+      while (inner.hasMore()) {
+        const tag = inner.readTag();
+        if (!tag) break;
+        if (tag.fieldNumber === 1 && tag.wireType === 2) uid = inner.readString();
+        else if (tag.fieldNumber === 2 && tag.wireType === 2) username = inner.readString();
+        else inner.skip(tag.wireType);
+      }
+      return { type, uid, username };
+    } else if (type === ServerMessageType.ROOM_PLAYER_LEFT) {
+      let uid = "";
+      while (inner.hasMore()) {
+        const tag = inner.readTag();
+        if (!tag) break;
+        if (tag.fieldNumber === 1 && tag.wireType === 2) uid = inner.readString();
+        else inner.skip(tag.wireType);
+      }
+      return { type, uid };
+    } else if (type === ServerMessageType.ROOM_PLAYERS) {
+      const players = [];
+      while (inner.hasMore()) {
+        const tag = inner.readTag();
+        if (!tag) break;
+        if (tag.fieldNumber === 1 && tag.wireType === 2) {
+          const itemBytes = inner.readBytes();
+          const ir = new BinaryReader(itemBytes);
+          let uid = "", username = null, x = 0, y = 0, z = 0, score = 0, alive = true, level = 0;
+          while (ir.hasMore()) {
+            const it = ir.readTag();
+            if (!it) break;
+            if (it.fieldNumber === 1 && it.wireType === 2) uid = ir.readString();
+            else if (it.fieldNumber === 2 && it.wireType === 2) username = ir.readString();
+            else if (it.fieldNumber === 3 && it.wireType === 5) x = ir.readFloat();
+            else if (it.fieldNumber === 4 && it.wireType === 5) y = ir.readFloat();
+            else if (it.fieldNumber === 5 && it.wireType === 1) z = ir.readDouble();
+            else if (it.fieldNumber === 6 && it.wireType === 1) score = ir.readDouble();
+            else if (it.fieldNumber === 7 && it.wireType === 0) alive = ir.readVarint() === 1;
+            else if (it.fieldNumber === 8 && it.wireType === 0) level = ir.readVarint();
+            else ir.skip(it.wireType);
+          }
+          players.push({ uid, username, x, y, z, score, alive, level });
+        }
+        else inner.skip(tag.wireType);
+      }
+      return { type, players };
+    } else if (type === ServerMessageType.ROOM_COUNTDOWN) {
+      let seconds = 0;
+      while (inner.hasMore()) {
+        const tag = inner.readTag();
+        if (!tag) break;
+        if (tag.fieldNumber === 1 && tag.wireType === 0) seconds = inner.readVarint();
+        else inner.skip(tag.wireType);
+      }
+      return { type, seconds };
+    } else if (type === ServerMessageType.ROOM_STARTED) {
+      return { type };
+    } else if (type === ServerMessageType.ROOM_PLAYER_DIED) {
+      let uid = "";
+      while (inner.hasMore()) {
+        const tag = inner.readTag();
+        if (!tag) break;
+        if (tag.fieldNumber === 1 && tag.wireType === 2) uid = inner.readString();
+        else inner.skip(tag.wireType);
+      }
+      return { type, uid };
+    } else if (type === ServerMessageType.ROOM_GAME_OVER) {
+      const rankings = [];
+      while (inner.hasMore()) {
+        const tag = inner.readTag();
+        if (!tag) break;
+        if (tag.fieldNumber === 1 && tag.wireType === 2) {
+          const itemBytes = inner.readBytes();
+          const ir = new BinaryReader(itemBytes);
+          let uid = "", username = null, score = 0, rank = 0;
+          while (ir.hasMore()) {
+            const it = ir.readTag();
+            if (!it) break;
+            if (it.fieldNumber === 1 && it.wireType === 2) uid = ir.readString();
+            else if (it.fieldNumber === 2 && it.wireType === 2) username = ir.readString();
+            else if (it.fieldNumber === 3 && it.wireType === 1) score = ir.readDouble();
+            else if (it.fieldNumber === 4 && it.wireType === 0) rank = ir.readVarint();
+            else ir.skip(it.wireType);
+          }
+          rankings.push({ uid, username, score, rank });
+        }
+        else inner.skip(tag.wireType);
+      }
+      return { type, rankings };
+    } else if (type === ServerMessageType.ROOM_ERROR) {
+      let message = "";
+      while (inner.hasMore()) {
+        const tag = inner.readTag();
+        if (!tag) break;
+        if (tag.fieldNumber === 1 && tag.wireType === 2) message = inner.readString();
+        else inner.skip(tag.wireType);
+      }
+      return { type, message };
     }
     return null;
   } catch (e) {
