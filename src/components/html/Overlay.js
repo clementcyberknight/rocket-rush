@@ -4,6 +4,7 @@ import { useDynamicContext, DynamicWidget } from '@dynamic-labs/sdk-react-core'
 
 import Loader from './CustomLoader'
 import AnimatedLeaderboard from './AnimatedLeaderboard'
+import MultiplayerMenu from './MultiplayerMenu'
 
 import '../../styles/gameMenu.css'
 
@@ -15,6 +16,7 @@ const Overlay = () => {
   const [opaque, setOpaque] = useState(true)
   const [hasLoaded, setHasLoaded] = useState(false)
   const [showLeaderboard, setShowLeaderboard] = useState(false)
+  const [showMultiplayer, setShowMultiplayer] = useState(false)
   const { active, progress } = useProgress()
 
   const gameStarted = useStore(s => s.gameStarted)
@@ -226,6 +228,14 @@ const Overlay = () => {
               <button onClick={() => setShowLeaderboard(!showLeaderboard)} className="game__leaderboard-btn">
                 {showLeaderboard ? 'HIDE LEADERBOARD' : '🏆 WEEKLY LEADERBOARD'}
               </button>
+
+              <button onClick={() => setShowMultiplayer(!showMultiplayer)} className="game__leaderboard-btn" style={{ marginTop: '0.3rem', borderColor: '#00f0ff', color: '#00f0ff' }}>
+                {showMultiplayer ? 'HIDE MULTIPLAYER' : '🎮 PLAY WITH FRIENDS'}
+              </button>
+
+              {showMultiplayer && (
+                <MultiplayerMenu onClose={() => setShowMultiplayer(false)} />
+              )}
 
               {showLeaderboard && (
                 <div className="game__leaderboard-panel">

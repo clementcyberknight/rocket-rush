@@ -771,3 +771,175 @@
   text-shadow: 0 0 10px #fe2079;
 }
 }
+
+/* Multiplayer */
+.multiplayer__container {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  background: rgba(20, 22, 34, 0.92);
+}
+.multiplayer__card {
+  background: rgba(20, 22, 34, 0.95);
+  border: 2px solid #00f0ff;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);
+}
+.multiplayer__title {
+  color: #00f0ff;
+  font-family: 'Road Rage', sans-serif;
+  font-size: 2.5rem;
+  text-align: center;
+  text-shadow: 0 0 20px #00f0ff;
+  margin: 0 0 1rem;
+}
+.multiplayer__subtitle {
+  color: #fff;
+  font-family: 'Commando', monospace;
+  text-align: center;
+  font-size: 1.2rem;
+}
+.multiplayer__code-box {
+  text-align: center;
+  margin: 1rem 0;
+}
+.multiplayer__code-label {
+  display: block;
+  color: #aaa;
+  font-family: 'Commando', monospace;
+  font-size: 0.8rem;
+  margin-bottom: 0.3rem;
+}
+.multiplayer__code {
+  font-family: 'Commando', monospace;
+  font-size: 2.5rem;
+  color: #00f0ff;
+  text-shadow: 0 0 20px #00f0ff;
+  letter-spacing: 6px;
+}
+.multiplayer__players {
+  margin: 1rem 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.multiplayer__players h3 {
+  color: #fe2079;
+  font-family: 'Commando', monospace;
+  font-size: 0.9rem;
+  margin: 0 0 0.5rem;
+}
+.multiplayer__empty {
+  color: #666;
+  font-family: 'Commando', monospace;
+  font-size: 0.8rem;
+}
+.multiplayer__player {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.3rem 0.5rem;
+  color: #fff;
+  font-family: 'Commando', monospace;
+  font-size: 0.9rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.multiplayer__host-badge {
+  background: #fe2079;
+  color: #fff;
+  font-size: 0.6rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+}
+.multiplayer__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.multiplayer__btn {
+  background: transparent;
+  border: 1px solid #fe2079;
+  border-radius: 10px;
+  color: #fe2079;
+  font-family: 'Commando', monospace;
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-shadow: 0 0 10px #fe2079;
+  flex: 1;
+}
+.multiplayer__btn:hover { background: rgba(254,32,121,0.2); color: #fff; }
+.multiplayer__btn-start { border-color: #00ff88; color: #00ff88; text-shadow: 0 0 10px #00ff88; }
+.multiplayer__btn-start:hover { background: rgba(0,255,136,0.2); }
+.multiplayer__btn-create { border-color: #00f0ff; color: #00f0ff; text-shadow: 0 0 10px #00f0ff; }
+.multiplayer__btn-create:hover { background: rgba(0,240,255,0.2); }
+.multiplayer__btn-join { border-color: #00f0ff; color: #00f0ff; text-shadow: 0 0 10px #00f0ff; }
+.multiplayer__btn-join:hover { background: rgba(0,240,255,0.2); }
+.multiplayer__btn-join:disabled { opacity: 0.3; cursor: default; }
+.multiplayer__btn-leave { border-color: #ff4444; color: #ff4444; text-shadow: 0 0 10px #ff4444; }
+.multiplayer__btn-leave:hover { background: rgba(255,68,68,0.2); }
+.multiplayer__btn-back { border-color: #666; color: #666; margin-top: 0.5rem; }
+.multiplayer__btn-back:hover { background: rgba(255,255,255,0.1); }
+.multiplayer__section { text-align: center; margin: 0.5rem 0; }
+.multiplayer__hint { color: #666; font-family: 'Commando', monospace; font-size: 0.7rem; margin-top: 0.3rem; }
+.multiplayer__divider { text-align: center; margin: 0.5rem 0; }
+.multiplayer__divider span { color: #444; font-family: 'Commando', monospace; font-size: 0.8rem; }
+.multiplayer__input {
+  background: rgba(0,0,0,0.7);
+  border: 2px solid #00f0ff;
+  border-radius: 10px;
+  color: #00f0ff;
+  font-family: 'Commando', monospace;
+  font-size: 1.5rem;
+  padding: 0.5rem;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  outline: none;
+  box-shadow: 0 0 15px rgba(0,240,255,0.3);
+}
+.multiplayer__input::placeholder { color: rgba(0,240,255,0.2); letter-spacing: 2px; font-size: 0.8rem; }
+
+.room-ranking {
+  position: absolute;
+  top: 6rem;
+  right: 1rem;
+  background: rgba(20,22,34,0.9);
+  border: 1px solid rgba(0,240,255,0.4);
+  border-radius: 10px;
+  padding: 0.4rem 0.7rem;
+  min-width: 180px;
+  z-index: 500;
+}
+.room-ranking__header {
+  color: #00f0ff;
+  font-family: 'Commando', monospace;
+  font-size: 0.75rem;
+  text-align: center;
+  margin-bottom: 0.3rem;
+  text-shadow: 0 0 8px #00f0ff;
+}
+.room-ranking__row {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0;
+  font-family: 'Commando', monospace;
+  font-size: 0.75rem;
+  color: #ccc;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.room-ranking__me { color: #00f0ff; text-shadow: 0 0 5px #00f0ff; }
+.room-ranking__dead { opacity: 0.4; }
+.room-ranking__rank { color: #fe2079; width: 22px; }
+.room-ranking__name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.room-ranking__skull { font-size: 0.65rem; }
