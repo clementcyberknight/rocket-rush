@@ -173,7 +173,7 @@ class LeaderboardService {
             break
 
           case ServerMessageType.ROOM_ERROR:
-            console.warn('[Room]', msg.message)
+            console.error('[Room]', msg.message)
             break
 
           default:
