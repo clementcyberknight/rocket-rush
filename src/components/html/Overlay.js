@@ -109,12 +109,18 @@ const Overlay = () => {
   }
 
   useEffect(() => {
-    if (gameStarted || gameOver || roomCode) {
+    if (gameStarted || gameOver) {
       setShown(false)
     } else if (!gameStarted) {
       setShown(true)
     }
-  }, [gameStarted, active, gameOver, roomCode])
+  }, [gameStarted, active, gameOver])
+
+  useEffect(() => {
+    if (roomCode) {
+      setShowMultiplayer(true)
+    }
+  }, [roomCode])
 
   useEffect(() => {
     let t

@@ -121,13 +121,21 @@ class LeaderboardService {
             useStore.getState().setUsernameCheckResult(msg.available, msg.error)
             break
 
-          case ServerMessageType.ROOM_CREATED:
+          case ServerMessageType.ROOM_CREATED: {
+            const state = useStore.getState()
             useStore.getState().setRoomCode(msg.code)
             useStore.getState().setRoomSeed(msg.seed)
             useStore.getState().setIsRoomHost(true)
             useStore.getState().setRoomStatus("lobby")
-            useStore.getState().setRoomPlayers([])
+            useStore.getState().setRoomPlayers([{
+              uid: state.uid || 'host',
+              username: state.username || 'ANONYMOUS',
+              isHost: true,
+              alive: true,
+              x: 0, y: 0, z: 0, score: 0, level: 0
+            }])
             break
+          }
 
           case ServerMessageType.ROOM_JOINED:
             useStore.getState().setRoomCode(msg.code)
