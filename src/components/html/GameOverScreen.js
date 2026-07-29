@@ -9,6 +9,7 @@ const GameOverScreen = () => {
   const [opaque, setOpaque] = useState(false)
 
   const gameOver = useStore(s => s.gameOver)
+  const isSpectating = useStore(s => s.isSpectating)
   const score = useStore(s => s.score)
   const restartGame = useStore(s => s.restartGame)
   const userHighScore = useStore(s => s.userHighScore)
@@ -26,7 +27,7 @@ const GameOverScreen = () => {
   }, [gameOver, opaque])
 
   useEffect(() => {
-    if (gameOver) {
+    if (gameOver && !isSpectating) {
       setShown(true)
     } else {
       setShown(false)
