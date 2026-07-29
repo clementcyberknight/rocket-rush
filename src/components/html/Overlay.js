@@ -38,6 +38,7 @@ const Overlay = () => {
   const usernameUpdateResult = useStore(s => s.usernameUpdateResult)
   const usernameCheckResult = useStore(s => s.usernameCheckResult)
   const leaderboardVersion = useStore(s => s.leaderboardVersion)
+  const roomCode = useStore(s => s.roomCode)
 
   const { primaryWallet, handleLogOut } = useDynamicContext()
 
@@ -108,12 +109,12 @@ const Overlay = () => {
   }
 
   useEffect(() => {
-    if (gameStarted || gameOver) {
+    if (gameStarted || gameOver || roomCode) {
       setShown(false)
     } else if (!gameStarted) {
       setShown(true)
     }
-  }, [gameStarted, active, gameOver])
+  }, [gameStarted, active, gameOver, roomCode])
 
   useEffect(() => {
     let t

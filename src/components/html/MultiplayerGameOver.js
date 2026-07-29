@@ -23,6 +23,7 @@ export default function MultiplayerGameOver() {
   const handleRestart = () => {
     useStore.getState().setGameOver(false)
     useStore.getState().setIsSpectating(false)
+    useStore.getState().setScore(0)
     leaderboardService.startRoom()
   }
 

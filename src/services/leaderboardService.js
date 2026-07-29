@@ -42,13 +42,15 @@ class LeaderboardService {
       this.ws.binaryType = 'arraybuffer'
 
       this.ws.onopen = () => {
-        // Fetch current weekly leaderboard upon connecting
         this.getLeaderboard(20)
 
-        // If we're in an active game session, re-establish it with the backend
         const state = useStore.getState()
         if (state.gameStarted && !state.gameOver) {
           this.startSession(state.walletAddress, state.username)
+        }
+
+        if (state.roomCode) {
+          this.joinRoom(state.roomCode)
         }
       }
 
