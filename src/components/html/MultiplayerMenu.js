@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useStore } from '../../state/useStore'
 import { leaderboardService } from '../../services/leaderboardService'
-import { getGuestId } from '../../services/leaderboardService'
 import '../../styles/gameMenu.css'
 
 export default function MultiplayerMenu({ onClose }) {
@@ -10,20 +9,15 @@ export default function MultiplayerMenu({ onClose }) {
   const roomPlayers = useStore(s => s.roomPlayers)
   const isRoomHost = useStore(s => s.isRoomHost)
   const roomStatus = useStore(s => s.roomStatus)
-  const roomSeed = useStore(s => s.roomSeed)
-  const walletAddress = useStore(s => s.walletAddress)
-  const username = useStore(s => s.username)
 
   const handleCreate = () => {
-    leaderboardService.connect()
-    setTimeout(() => leaderboardService.createRoom(), 200)
+    leaderboardService.createRoom()
   }
 
   const handleJoin = () => {
     const code = joinCode.trim().toUpperCase()
     if (!code || code.length < 4) return
-    leaderboardService.connect()
-    setTimeout(() => leaderboardService.joinRoom(code), 200)
+    leaderboardService.joinRoom(code)
   }
 
   const handleStart = () => {

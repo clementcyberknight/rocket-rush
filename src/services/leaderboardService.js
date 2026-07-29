@@ -359,13 +359,27 @@ class LeaderboardService {
   }
 
   createRoom() {
-    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) { this.connect(); return }
-    this.ws.send(encodeClientMessage({ type: ClientMessageType.CREATE_ROOM }))
+    const send = () => {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return false
+      this.ws.send(encodeClientMessage({ type: ClientMessageType.CREATE_ROOM }))
+      return true
+    }
+    if (!send()) {
+      this.connect()
+      setTimeout(() => send(), 500)
+    }
   }
 
   joinRoom(code) {
-    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) { this.connect(); return }
-    this.ws.send(encodeClientMessage({ type: ClientMessageType.JOIN_ROOM, code }))
+    const send = () => {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return false
+      this.ws.send(encodeClientMessage({ type: ClientMessageType.JOIN_ROOM, code }))
+      return true
+    }
+    if (!send()) {
+      this.connect()
+      setTimeout(() => send(), 500)
+    }
   }
 
   leaveRoom() {
