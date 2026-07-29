@@ -243,9 +243,9 @@ export function decodeServerMessage(buffer) {
       else reader.skip(tag.wireType);
     }
 
-    if (!type || !payloadBytes) return null;
+    if (!type) return null;
 
-    const inner = new BinaryReader(payloadBytes);
+    const inner = new BinaryReader(payloadBytes || new Uint8Array(0));
 
     if (type === ServerMessageType.SESSION_STARTED) {
       let sessionId = "";
