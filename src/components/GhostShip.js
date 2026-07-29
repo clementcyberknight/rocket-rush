@@ -16,15 +16,13 @@ export default function GhostShip() {
 
   const { nodes } = useGLTF(shipModel, dracoPath)
 
-  if (roomCode) return null
-
   useEffect(() => {
     startTimeRef.current = Date.now()
   }, [gameSession])
 
   useFrame(() => {
     if (!ghostRef.current) return
-    if (!ghostPath || ghostPath.length < 2) {
+    if (roomCode || !ghostPath || ghostPath.length < 2) {
       ghostRef.current.visible = false
       return
     }
@@ -50,7 +48,7 @@ export default function GhostShip() {
     )
   })
 
-  if (!nodes) return null
+  if (!nodes || roomCode) return null
 
   return (
     <group ref={ghostRef} visible={false} dispose={null}>
