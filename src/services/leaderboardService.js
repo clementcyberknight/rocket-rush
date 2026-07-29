@@ -165,20 +165,34 @@ class LeaderboardService {
           case ServerMessageType.ROOM_PLAYERS: {
             const existing = useStore.getState().roomPlayers || []
             const existingMap = new Map(existing.map(p => [p.uid, p]))
-            const merged = (msg.players || []).map(p => {
+            
+            ;(msg.players || []).forEach(p => {
               const old = existingMap.get(p.uid)
-              return { ...p, isHost: old?.isHost || false }
+              existingMap.set(p.uid, {
+                ...old,
+                ...p,
+                username: p.username || old?.username || null,
+                isHost: old?.isHost || false,
+                alive: old?.alive === false ? false : p.alive,
+              })
             })
-            useStore.getState().setRoomPlayers(merged)
+
+            useStore.getState().setRoomPlayers(Array.from(existingMap.values()))
             break
           }
 
           case ServerMessageType.ROOM_COUNTDOWN:
             useStore.getState().setRoomStatus("countdown")
+            useStore.getState().setGameOver(false)
+            useStore.getState().setIsSpectating(false)
+            useStore.getState().setScore(0)
             break
 
           case ServerMessageType.ROOM_STARTED:
             useStore.getState().setRoomStatus("playing")
+            useStore.getState().setGameOver(false)
+            useStore.getState().setIsSpectating(false)
+            useStore.getState().restartGame()
             break
 
           case ServerMessageType.ROOM_PLAYER_DIED: {

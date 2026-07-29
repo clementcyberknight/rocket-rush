@@ -8,16 +8,12 @@ const v = new Vector3()
 export default function SpectateCamera() {
   const isSpectating = useStore(s => s.isSpectating)
   const roomPlayers = useStore(s => s.roomPlayers)
-  const { camera } = useThree()
+  const cameraRef = useStore(s => s.camera)
   const targetRef = useRef({ x: 0, y: 3, z: -10 })
   const prevTarget = useRef({ x: 0, y: 3, z: -10 })
 
   useFrame(() => {
-    if (!isSpectating || !roomPlayers) {
-      camera.position.set(0, 5, -10)
-      camera.lookAt(0, 3, 10)
-      return
-    }
+    if (!isSpectating || !roomPlayers) return
 
     const alive = roomPlayers.filter(p => p.alive)
     if (alive.length === 0) return
@@ -28,18 +24,20 @@ export default function SpectateCamera() {
     targetRef.current.z = (target.z || -10)
 
     const pt = prevTarget.current
-    pt.x += (targetRef.current.x - pt.x) * 0.1
-    pt.y += (targetRef.current.y - pt.y) * 0.1
-    pt.z += (targetRef.current.z - pt.z) * 0.1
+    pt.x += (targetRef.current.x - pt.x) * 0.15
+    pt.y += (targetRef.current.y - pt.y) * 0.15
+    pt.z += (targetRef.current.z - pt.z) * 0.15
 
-    camera.position.set(
-      pt.x + 2,
-      pt.y + 5,
-      pt.z + 14
-    )
-    camera.lookAt(
-      v.set(pt.x, pt.y, pt.z + 10)
-    )
+    const cam = cameraRef?.current
+    if (cam) {
+      cam.position.set(
+        pt.x,
+        pt.y + 5,
+        pt.z + 13.5
+      )
+      cam.lookAt(v.set(pt.x, pt.y, pt.z - 20))
+      cam.rotation.y = Math.PI
+    }
   })
 
   return null

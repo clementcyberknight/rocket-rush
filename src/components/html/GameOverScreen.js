@@ -27,12 +27,12 @@ const GameOverScreen = () => {
   }, [gameOver, opaque])
 
   useEffect(() => {
-    if (gameOver && !isSpectating) {
+    if (gameOver && !isSpectating && !useStore.getState().roomCode) {
       setShown(true)
     } else {
       setShown(false)
     }
-  }, [gameOver])
+  }, [gameOver, isSpectating])
 
   const handleRestart = () => {
     restartGame()

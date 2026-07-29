@@ -12,7 +12,7 @@ export default function MultiplayerGameOver() {
   const score = useStore(s => s.score)
   const userRank = useStore(s => s.userRank)
   const userHighScore = useStore(s => s.userHighScore)
-  const setGameStarted = useStore(s => s.setGameStarted)
+  const isRoomHost = useStore(s => s.isRoomHost)
 
   if (!gameOver || roomStatus === 'lobby' || !isSpectating) return null
 
@@ -24,6 +24,7 @@ export default function MultiplayerGameOver() {
     useStore.getState().setGameOver(false)
     useStore.getState().setIsSpectating(false)
     useStore.getState().setScore(0)
+    useStore.getState().restartGame()
     leaderboardService.startRoom()
   }
 
@@ -84,13 +85,18 @@ export default function MultiplayerGameOver() {
             </div>
           </>
         )}
-        <div className="multiplayer__actions" style={{ marginTop: '1rem' }}>
-          {finished && (
-            <button onClick={handleRestart} className="multiplayer__btn multiplayer__btn-start" style={{ flex: 1 }}>
-              PLAY AGAIN
+        <div className="multiplayer__actions" style={{ marginTop: '1rem', flexDirection: 'column', gap: '0.5rem' }}>
+          {finished && isRoomHost && (
+            <button onClick={handleRestart} className="multiplayer__btn multiplayer__btn-start" style={{ width: '100%' }}>
+              PLAY AGAIN 🚀
             </button>
           )}
-          <button onClick={handleLeave} className="multiplayer__btn multiplayer__btn-leave" style={{ flex: 1 }}>
+          {finished && !isRoomHost && (
+            <div style={{ color: '#00f0ff', fontSize: '0.9rem', textAlign: 'center', margin: '0.5rem 0' }}>
+              Waiting for room host to start next round...
+            </div>
+          )}
+          <button onClick={handleLeave} className="multiplayer__btn multiplayer__btn-leave" style={{ width: '100%' }}>
             LEAVE ROOM
           </button>
         </div>

@@ -159,11 +159,12 @@ function ShipModel(props, { children }) {
     pointLight.current.position.x = ship.current.position.x
     pointLight.current.position.y -= slowSine / 80
 
-    camera.current.position.z = ship.current.position.z + 13.5
-    camera.current.position.y = ship.current.position.y + 5
-    camera.current.position.x = ship.current.position.x
-
-    camera.current.rotation.y = Math.PI
+    if (!useStore.getState().isSpectating) {
+      camera.current.position.z = ship.current.position.z + 13.5
+      camera.current.position.y = ship.current.position.y + 5
+      camera.current.position.x = ship.current.position.x
+      camera.current.rotation.y = Math.PI
+    }
 
     if ((left && right) || (!left && !right)) {
       if (mutation.horizontalVelocity < 0) {
