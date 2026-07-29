@@ -1,9 +1,6 @@
 import { useRef } from 'react'
-import { useFrame, useThree } from '@react-three/fiber'
+import { useFrame } from '@react-three/fiber'
 import { useStore } from '../state/useStore'
-import { Vector3 } from 'three'
-
-const v = new Vector3()
 
 export default function SpectateCamera() {
   const isSpectating = useStore(s => s.isSpectating)
@@ -12,8 +9,7 @@ export default function SpectateCamera() {
   const spectateTargetUid = useStore(s => s.spectateTargetUid)
   const spectateCamMode = useStore(s => s.spectateCamMode)
 
-  const targetRef = useRef({ x: 0, y: 3, z: -10 })
-  const prevTarget = useRef({ x: 0, y: 3, z: -10 })
+  const smoothPos = useRef({ x: 0, y: 8, z: 3 })
 
   useFrame(() => {
     if (!isSpectating || !roomPlayers) return
@@ -24,29 +20,35 @@ export default function SpectateCamera() {
     let target = alive.find(p => p.uid === spectateTargetUid)
     if (!target) target = alive[0]
 
-    targetRef.current.x = target.x || 0
-    targetRef.current.y = target.y || 3
-    targetRef.current.z = target.z || -10
-
-    const pt = prevTarget.current
-    pt.x += (targetRef.current.x - pt.x) * 0.25
-    pt.y += (targetRef.current.y - pt.y) * 0.25
-    pt.z += (targetRef.current.z - pt.z) * 0.25
+    const tx = target.x || 0
+    const ty = target.y || 3
+    const tz = target.z || -10
 
     const cam = cameraRef?.current
-    if (cam) {
-      if (spectateCamMode === 'fpv') {
-        // First-Person Cockpit View
-        cam.position.set(pt.x, pt.y + 0.9, pt.z - 0.5)
-        cam.lookAt(v.set(pt.x, pt.y + 0.9, pt.z - 100))
-        cam.rotation.z = Math.PI
-      } else {
-        // Chase View
-        cam.position.set(pt.x, pt.y + 4, pt.z + 12)
-        cam.lookAt(v.set(pt.x, pt.y + 2, pt.z - 50))
-        cam.rotation.z = Math.PI
-      }
+    if (!cam) return
+
+    // Use same camera setup as Ship.js: position behind+above ship, rotation.y = Math.PI
+    let goalX, goalY, goalZ
+    if (spectateCamMode === 'fpv') {
+      // First-person: cockpit view, same position as ship
+      goalX = tx
+      goalY = ty + 1.2
+      goalZ = tz + 1
+    } else {
+      // Chase: behind and above, same as Ship.js uses
+      goalX = tx
+      goalY = ty + 5
+      goalZ = tz + 13.5
     }
+
+    // Smooth lerp
+    const sp = smoothPos.current
+    sp.x += (goalX - sp.x) * 0.2
+    sp.y += (goalY - sp.y) * 0.2
+    sp.z += (goalZ - sp.z) * 0.2
+
+    cam.position.set(sp.x, sp.y, sp.z)
+    cam.rotation.set(0, Math.PI, 0)
   })
 
   return null

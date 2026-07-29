@@ -4,8 +4,6 @@ import { useFrame } from '@react-three/fiber'
 
 import { CUBE_AMOUNT, CUBE_SIZE, PLANE_SIZE, COLORS, WALL_RADIUS, LEVEL_SIZE, LEFT_BOUND, RIGHT_BOUND } from '../constants'
 import { useStore, mutation } from '../state/useStore'
-
-import randomInRange from '../util/randomInRange'
 import distance2D from '../util/distance2D'
 import createSeededRNG from '../util/seededRandom'
 
