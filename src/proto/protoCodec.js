@@ -71,7 +71,6 @@ export class BinaryWriter {
   }
 
   writeBool(fieldNumber, val) {
-    if (!val) return;
     this.writeTag(fieldNumber, 0);
     this.writeVarint(val ? 1 : 0);
   }
@@ -219,8 +218,12 @@ export function encodeClientMessage(msg) {
     inner.writeString(1, msg.username);
     inner.writeString(2, msg.wallet);
   } else if (msg.type === ClientMessageType.CREATE_ROOM) {
+    if (msg.wallet) inner.writeString(1, msg.wallet);
+    if (msg.username) inner.writeString(2, msg.username);
   } else if (msg.type === ClientMessageType.JOIN_ROOM) {
     inner.writeString(1, msg.code);
+    if (msg.wallet) inner.writeString(2, msg.wallet);
+    if (msg.username) inner.writeString(3, msg.username);
   } else if (msg.type === ClientMessageType.LEAVE_ROOM) {
   } else if (msg.type === ClientMessageType.START_ROOM) {
   }

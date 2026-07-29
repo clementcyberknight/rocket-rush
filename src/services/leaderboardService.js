@@ -383,7 +383,10 @@ class LeaderboardService {
   createRoom() {
     const send = () => {
       if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return false
-      this.ws.send(encodeClientMessage({ type: ClientMessageType.CREATE_ROOM }))
+      const state = useStore.getState()
+      const wallet = state.walletAddress || getGuestId()
+      const username = state.username || localStorage.getItem('rocket_rush_custom_username') || undefined
+      this.ws.send(encodeClientMessage({ type: ClientMessageType.CREATE_ROOM, wallet, username }))
       return true
     }
     if (!send()) {
@@ -395,7 +398,10 @@ class LeaderboardService {
   joinRoom(code) {
     const send = () => {
       if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return false
-      this.ws.send(encodeClientMessage({ type: ClientMessageType.JOIN_ROOM, code }))
+      const state = useStore.getState()
+      const wallet = state.walletAddress || getGuestId()
+      const username = state.username || localStorage.getItem('rocket_rush_custom_username') || undefined
+      this.ws.send(encodeClientMessage({ type: ClientMessageType.JOIN_ROOM, code, wallet, username }))
       return true
     }
     if (!send()) {
