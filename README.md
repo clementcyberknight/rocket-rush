@@ -63,7 +63,7 @@ rocket-rush/
     │       ├── Author.js       # Footer attribution
     │       └── SynxedMiniPlayer.js # External audio player widget
     ├── services/
-    │   └── leaderboardService.js # WebSocket client, protobuf, session management
+    │   └── leaderboardService.js # WebSocket client, protobuffer, session management
     ├── proto/
     │   └── protoCodec.js       # Binary protobuf encoder/decoder + ghost blob codec
     ├── state/
