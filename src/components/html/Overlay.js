@@ -15,7 +15,7 @@ const Overlay = () => {
   const [shown, setShown] = useState(true)
   const [opaque, setOpaque] = useState(true)
   const [hasLoaded, setHasLoaded] = useState(false)
-  const [showLeaderboard, setShowLeaderboard] = useState(false)
+  const [showLeaderboard, setShowLeaderboard] = useState(true)
   const [showMultiplayer, setShowMultiplayer] = useState(false)
   const { active, progress } = useProgress()
 

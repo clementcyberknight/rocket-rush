@@ -4,9 +4,9 @@ import '../styles/gameMenu.css'
 export default function RoomRanking() {
   const roomPlayers = useStore(s => s.roomPlayers)
   const uid = useStore(s => s.uid)
-  const roomStatus = useStore(s => s.roomStatus)
+  const roomCode = useStore(s => s.roomCode)
 
-  if (!roomPlayers || roomPlayers.length === 0 || roomStatus !== 'playing') return null
+  if (!roomPlayers || roomPlayers.length === 0 || !roomCode || roomStatus === 'lobby') return null
 
   const sorted = [...roomPlayers].filter(p => p.alive).sort((a, b) => (b.score || 0) - (a.score || 0))
   const dead = roomPlayers.filter(p => !p.alive)
