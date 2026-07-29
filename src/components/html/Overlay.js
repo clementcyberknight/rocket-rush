@@ -15,7 +15,7 @@ const Overlay = () => {
   const [shown, setShown] = useState(true)
   const [opaque, setOpaque] = useState(true)
   const [hasLoaded, setHasLoaded] = useState(false)
-  const [showLeaderboard, setShowLeaderboard] = useState(true)
+  const [showLeaderboard, setShowLeaderboard] = useState(false)
   const [showMultiplayer, setShowMultiplayer] = useState(false)
   const { active, progress } = useProgress()
 
@@ -232,17 +232,17 @@ const Overlay = () => {
                 )}
               </div>
 
-              <button onClick={() => setShowLeaderboard(!showLeaderboard)} className="game__leaderboard-btn">
-                {showLeaderboard ? 'HIDE LEADERBOARD' : '🏆 WEEKLY LEADERBOARD'}
-              </button>
-
-              <button onClick={() => setShowMultiplayer(!showMultiplayer)} className="game__leaderboard-btn" style={{ marginTop: '0.3rem', borderColor: '#00f0ff', color: '#00f0ff' }}>
+              <button onClick={() => setShowMultiplayer(!showMultiplayer)} className="game__leaderboard-btn" style={{ borderColor: '#00f0ff', color: '#00f0ff' }}>
                 {showMultiplayer ? 'HIDE MULTIPLAYER' : '🎮 PLAY WITH FRIENDS'}
               </button>
 
               {showMultiplayer && (
                 <MultiplayerMenu onClose={() => setShowMultiplayer(false)} />
               )}
+
+              <button onClick={() => setShowLeaderboard(!showLeaderboard)} className="game__leaderboard-btn" style={{ marginTop: '0.4rem' }}>
+                {showLeaderboard ? 'HIDE LEADERBOARD' : '🏆 WEEKLY LEADERBOARD'}
+              </button>
 
               {showLeaderboard && (
                 <div className="game__leaderboard-panel">
