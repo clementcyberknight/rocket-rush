@@ -7,6 +7,7 @@ import shipModel from '../models/spaceship.gltf'
 const dracoPath = `${process.env.PUBLIC_URL}/draco/`
 
 export default function GhostShip() {
+  const roomCode = useStore(s => s.roomCode)
   const ghostPath = useStore(s => s.ghostPath)
   const ghostInterval = useStore(s => s.ghostInterval)
   const gameSession = useStore(s => s.gameSession)
@@ -14,6 +15,8 @@ export default function GhostShip() {
   const startTimeRef = useRef(Date.now())
 
   const { nodes } = useGLTF(shipModel, dracoPath)
+
+  if (roomCode) return null
 
   useEffect(() => {
     startTimeRef.current = Date.now()
