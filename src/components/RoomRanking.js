@@ -1,5 +1,5 @@
 import { useStore } from '../state/useStore'
-import '../../styles/gameMenu.css'
+import '../styles/gameMenu.css'
 
 export default function RoomRanking() {
   const roomPlayers = useStore(s => s.roomPlayers)

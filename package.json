@@ -9,6 +9,8 @@
     "@dynamic-labs/solana": "^4.94.0",
     "@react-three/drei": "^5.3.1",
     "@react-three/fiber": "^6.2.2",
+    "baseline-browser-mapping": "^2.11.6",
+    "caniuse-lite": "^1.0.30001806",
     "react": "^18.3.1",
     "react-device-detect": "^2.2.3",
     "react-dom": "^18.3.1",
