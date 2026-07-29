@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { useStore } from '../state/useStore'
-import { leaderboardService } from '../services/leaderboardService'
-import { getGuestId } from '../services/leaderboardService'
+import { useStore } from '../../state/useStore'
+import { leaderboardService } from '../../services/leaderboardService'
+import { getGuestId } from '../../services/leaderboardService'
 import '../../styles/gameMenu.css'
 
 export default function MultiplayerMenu({ onClose }) {
