@@ -26,6 +26,7 @@ import Overlay from './html/Overlay'
 import Hud from './html/Hud'
 import RoomRanking from './RoomRanking'
 import GameOverScreen from './html/GameOverScreen'
+import MultiplayerGameOver from './html/MultiplayerGameOver'
 
 export default function CubeWorld({ color, bgColor }) {
   const directionalLight = useStore((s) => s.directionalLight)
@@ -62,6 +63,7 @@ export default function CubeWorld({ color, bgColor }) {
       <Hud />
       <RoomRanking />
       <GameOverScreen />
+      <MultiplayerGameOver />
       <Overlay />
     </>
   )

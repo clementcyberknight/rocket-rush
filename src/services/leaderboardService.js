@@ -131,7 +131,10 @@ class LeaderboardService {
             useStore.getState().setRoomCode(msg.code)
             useStore.getState().setRoomSeed(msg.seed)
             useStore.getState().setRoomStatus("lobby")
-            useStore.getState().setRoomPlayers(msg.players || [])
+            useStore.getState().setRoomPlayers((msg.players || []).map(p => ({
+              uid: p.uid, username: p.username, isHost: p.isHost,
+              alive: true, x: 0, y: 0, z: 0, score: 0, level: 0
+            })))
             useStore.getState().setIsRoomHost(false)
             break
 
@@ -149,9 +152,16 @@ class LeaderboardService {
             break
           }
 
-          case ServerMessageType.ROOM_PLAYERS:
-            useStore.getState().setRoomPlayers(msg.players || [])
+          case ServerMessageType.ROOM_PLAYERS: {
+            const existing = useStore.getState().roomPlayers || []
+            const existingMap = new Map(existing.map(p => [p.uid, p]))
+            const merged = (msg.players || []).map(p => {
+              const old = existingMap.get(p.uid)
+              return { ...p, isHost: old?.isHost || false }
+            })
+            useStore.getState().setRoomPlayers(merged)
             break
+          }
 
           case ServerMessageType.ROOM_COUNTDOWN:
             useStore.getState().setRoomStatus("countdown")
@@ -164,6 +174,9 @@ class LeaderboardService {
           case ServerMessageType.ROOM_PLAYER_DIED: {
             const all = useStore.getState().roomPlayers || []
             useStore.getState().setRoomPlayers(all.map(p => p.uid === msg.uid ? { ...p, alive: false } : p))
+            if (msg.uid === useStore.getState().uid) {
+              useStore.getState().setIsSpectating(true)
+            }
             break
           }
 
