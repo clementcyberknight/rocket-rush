@@ -126,25 +126,22 @@
 .game__scorecontainer {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
-  text-shadow: 0 0 20px #fe2079;
-  margin-bottom: 2rem;
-}
-
-.game__scorecontainer {
-  margin-right: 10rem;
-  display: flex;
-  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  text-shadow: 0 0 20px #fe2079;
+  margin-bottom: 1rem;
+  max-width: 90%;
+  flex-wrap: wrap;
 }
 
 .game__score-right {
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-height: 60vh;
+  max-height: 40vh;
   overflow-y: auto;
-  min-width: 320px;
+  min-width: 280px;
 }
 
 .game__menu-button {

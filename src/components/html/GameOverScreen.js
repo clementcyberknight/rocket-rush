@@ -38,14 +38,21 @@ const GameOverScreen = () => {
     restartGame()
   }
 
+  const handleMainMenu = () => {
+    useStore.getState().setGameOver(false)
+    useStore.getState().setGameStarted(false)
+    useStore.getState().setIsSpectating(false)
+    useStore.getState().restartGame()
+  }
+
   return shown ? (
-    <div className="game__container" style={{ opacity: shown ? 1 : 0, background: opaque ? '#141622FF' : '#141622CC' }}>
-      <div className="game__menu">
-        <h1 className="game__score-gameover">GAME OVER</h1>
-        <div className="game__scorecontainer">
-          <div className="game__score-left">
-            <h1 className="game__score-title">RUN SCORE</h1>
-            <h1 className="game__score">{currentScore}</h1>
+    <div className="game__container" style={{ opacity: shown ? 1 : 0, background: opaque ? '#141622FF' : '#141622CC', overflowY: 'auto' }}>
+      <div className="game__menu" style={{ padding: '1.5rem 0' }}>
+        <h1 className="game__score-gameover" style={{ fontSize: '5rem', marginBottom: '0.5rem' }}>GAME OVER</h1>
+        <div className="game__scorecontainer" style={{ margin: '0 0 1rem 0' }}>
+          <div className="game__score-left" style={{ margin: 0 }}>
+            <h1 className="game__score-title" style={{ fontSize: '2.2rem' }}>RUN SCORE</h1>
+            <h1 className="game__score" style={{ fontSize: '5rem' }}>{currentScore}</h1>
 
             {isNewBest ? (
               <div className="game__new-best-badge">
@@ -65,11 +72,27 @@ const GameOverScreen = () => {
               </div>
             )}
           </div>
-          <div className="game__score-right">
-            <AnimatedLeaderboard limit={20} compact={true} key={`lb-${leaderboardVersion}`} />
+          <div className="game__score-right" style={{ maxHeight: '35vh' }}>
+            <AnimatedLeaderboard limit={10} compact={true} key={`lb-${leaderboardVersion}`} />
           </div>
         </div>
-        <button onClick={handleRestart} className="game__menu-button">PLAY AGAIN</button>
+
+        <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <button
+            onClick={handleRestart}
+            className="multiplayer__btn multiplayer__btn-start"
+            style={{ padding: '0.6rem 2rem', fontSize: '1.2rem' }}
+          >
+            PLAY AGAIN 🚀
+          </button>
+          <button
+            onClick={handleMainMenu}
+            className="multiplayer__btn multiplayer__btn-leave"
+            style={{ padding: '0.6rem 2rem', fontSize: '1.2rem' }}
+          >
+            MAIN MENU
+          </button>
+        </div>
       </div>
     </div>
   ) : null
