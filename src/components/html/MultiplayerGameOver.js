@@ -10,15 +10,18 @@ export default function MultiplayerGameOver() {
   const roomStatus = useStore(s => s.roomStatus)
   const uid = useStore(s => s.uid)
   const score = useStore(s => s.score)
-  const userRank = useStore(s => s.userRank)
-  const userHighScore = useStore(s => s.userHighScore)
   const isRoomHost = useStore(s => s.isRoomHost)
+  const spectateTargetUid = useStore(s => s.spectateTargetUid)
+  const setSpectateTargetUid = useStore(s => s.setSpectateTargetUid)
+  const spectateCamMode = useStore(s => s.spectateCamMode)
+  const setSpectateCamMode = useStore(s => s.setSpectateCamMode)
 
   if (!gameOver || roomStatus === 'lobby' || !isSpectating) return null
 
-  const aliveCount = roomPlayers?.filter(p => p.alive).length || 0
-  const deadCount = roomPlayers?.filter(p => !p.alive).length || 0
+  const alivePlayers = roomPlayers?.filter(p => p.alive) || []
+  const aliveCount = alivePlayers.length
   const finished = roomStatus === 'finished'
+  const currentTarget = alivePlayers.find(p => p.uid === spectateTargetUid) || alivePlayers[0]
 
   const handleRestart = () => {
     useStore.getState().setGameOver(false)
@@ -31,6 +34,7 @@ export default function MultiplayerGameOver() {
   const handleLeave = () => {
     useStore.getState().setGameOver(false)
     useStore.getState().setIsSpectating(false)
+    useStore.getState().setGameStarted(false)
     useStore.getState().restartGame()
     leaderboardService.leaveRoom()
     useStore.getState().setRoomCode(null)
@@ -38,11 +42,12 @@ export default function MultiplayerGameOver() {
     useStore.getState().setRoomStatus(null)
     useStore.getState().setIsRoomHost(false)
     useStore.getState().setRoomSeed(null)
+    useStore.getState().setRoomRankings(null)
   }
 
   return (
     <div className="multiplayer__container" style={{ background: 'rgba(20, 22, 34, 0.88)' }}>
-      <div className="multiplayer__card" style={{ maxWidth: 480 }}>
+      <div className="multiplayer__card" style={{ maxWidth: 500 }}>
         {finished ? (
           <>
             <h2 className="multiplayer__title">GAME OVER</h2>
@@ -69,19 +74,58 @@ export default function MultiplayerGameOver() {
                 <span className="game__score" style={{ fontSize: '3rem' }}>{(score || 0).toFixed(0)}</span>
               </div>
             </div>
-            <p className="multiplayer__subtitle" style={{ marginBottom: '1rem' }}>
+            <p className="multiplayer__subtitle" style={{ marginBottom: '0.5rem' }}>
               {aliveCount > 0
-                ? `Spectating... ${aliveCount} pilot${aliveCount > 1 ? 's' : ''} still flying`
-                : 'Waiting for others...'}
+                ? `Spectating ${currentTarget?.username || 'PILOT'} ... ${aliveCount} pilot${aliveCount > 1 ? 's' : ''} still flying`
+                : 'Waiting for round to complete...'}
             </p>
+
+            {aliveCount > 0 && (
+              <div style={{ marginBottom: '0.8rem' }}>
+                <button
+                  onClick={() => setSpectateCamMode(spectateCamMode === 'fpv' ? 'chase' : 'fpv')}
+                  className="multiplayer__btn"
+                  style={{
+                    padding: '0.4rem 0.8rem',
+                    fontSize: '0.85rem',
+                    borderColor: '#00f0ff',
+                    color: '#00f0ff',
+                    background: 'rgba(0, 240, 255, 0.1)',
+                  }}
+                >
+                  🎥 CAMERA: {spectateCamMode === 'fpv' ? 'FPV (FIRST-PERSON COCKPIT)' : 'CHASE (THIRD-PERSON)'}
+                </button>
+              </div>
+            )}
+
             <div className="multiplayer__players">
-              {(roomPlayers || []).sort((a, b) => (b.score || 0) - (a.score || 0)).map(p => (
-                <div key={p.uid} className={`multiplayer__player ${!p.alive ? 'room-ranking__dead' : ''} ${p.uid === uid ? 'room-ranking__me' : ''}`}>
-                  <span className="room-ranking__name">{p.username || 'PILOT'}</span>
-                  <span className="room-ranking__score">{(p.score || 0).toFixed(0)}</span>
-                  {p.alive ? <span style={{ color: '#00ff88', fontSize: '0.7rem' }}>ALIVE</span> : <span className="room-ranking__skull">☠</span>}
-                </div>
-              ))}
+              {(roomPlayers || []).sort((a, b) => (b.score || 0) - (a.score || 0)).map(p => {
+                const isCurrentTarget = currentTarget?.uid === p.uid
+                return (
+                  <div key={p.uid} className={`multiplayer__player ${!p.alive ? 'room-ranking__dead' : ''} ${p.uid === uid ? 'room-ranking__me' : ''}`}>
+                    <span className="room-ranking__name">{p.username || 'PILOT'}</span>
+                    <span className="room-ranking__score">{(p.score || 0).toFixed(0)}</span>
+                    {p.alive ? (
+                      <button
+                        onClick={() => setSpectateTargetUid(p.uid)}
+                        style={{
+                          background: isCurrentTarget ? 'rgba(0, 255, 136, 0.25)' : 'transparent',
+                          border: isCurrentTarget ? '1px solid #00ff88' : '1px solid #666',
+                          color: isCurrentTarget ? '#00ff88' : '#aaa',
+                          borderRadius: 4,
+                          padding: '2px 8px',
+                          cursor: 'pointer',
+                          fontSize: '0.75rem',
+                        }}
+                      >
+                        {isCurrentTarget ? '👁️ SPECTATING' : '👁️ SPECTATE'}
+                      </button>
+                    ) : (
+                      <span className="room-ranking__skull">☠</span>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </>
         )}

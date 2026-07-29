@@ -63,6 +63,8 @@ const useStore = create(subscribeWithSelector((set, get) => {
     isRoomHost: false,
     roomStatus: null,
     isSpectating: false,
+    spectateTargetUid: null,
+    spectateCamMode: 'fpv',
     roomRankings: null,
     roomRNG: null,
 
@@ -77,6 +79,8 @@ const useStore = create(subscribeWithSelector((set, get) => {
     setIsRoomHost: (host) => set({ isRoomHost: host }),
     setRoomStatus: (status) => set({ roomStatus: status }),
     setIsSpectating: (s) => set({ isSpectating: s }),
+    setSpectateTargetUid: (targetUid) => set({ spectateTargetUid: targetUid }),
+    setSpectateCamMode: (mode) => set({ spectateCamMode: mode }),
     setRoomRankings: (r) => set({ roomRankings: r }),
     setRoomRNG: (rng) => set({ roomRNG: rng }),
     setLeaderboard: (leaderboard, week) => set(state => ({ leaderboard, currentWeek: week, leaderboardVersion: state.leaderboardVersion + 1 })),

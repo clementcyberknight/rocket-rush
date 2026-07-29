@@ -137,16 +137,24 @@ class LeaderboardService {
             break
           }
 
-          case ServerMessageType.ROOM_JOINED:
+          case ServerMessageType.ROOM_JOINED: {
+            const state = useStore.getState()
+            const myUid = state.uid
+            const players = msg.players || []
+            const meInList = players.find(p => p.uid === myUid)
+            
             useStore.getState().setRoomCode(msg.code)
             useStore.getState().setRoomSeed(msg.seed)
             useStore.getState().setRoomStatus("lobby")
-            useStore.getState().setRoomPlayers((msg.players || []).map(p => ({
+            useStore.getState().setRoomPlayers(players.map(p => ({
               uid: p.uid, username: p.username, isHost: p.isHost,
               alive: true, x: 0, y: 0, z: 0, score: 0, level: 0
             })))
-            useStore.getState().setIsRoomHost(false)
+            if (meInList && meInList.isHost) {
+              useStore.getState().setIsRoomHost(true)
+            }
             break
+          }
 
           case ServerMessageType.ROOM_PLAYER_JOINED: {
             const p = useStore.getState().roomPlayers || []
