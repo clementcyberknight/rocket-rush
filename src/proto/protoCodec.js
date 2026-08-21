@@ -161,6 +161,8 @@ export const ClientMessageType = {
   JOIN_ROOM: 9,
   LEAVE_ROOM: 10,
   START_ROOM: 11,
+  SPECTATE_TARGET: 12,
+  PLAYER_MOVE: 13,
 };
 
 // Server Message Types
@@ -181,6 +183,7 @@ export const ServerMessageType = {
   ROOM_PLAYER_DIED: 14,
   ROOM_GAME_OVER: 15,
   ROOM_ERROR: 16,
+  ROOM_PLAYERS_COMPACT: 17,
 };
 
 export function encodeClientMessage(msg) {
@@ -234,7 +237,16 @@ export function encodeClientMessage(msg) {
 
 export function decodeServerMessage(buffer) {
   try {
-    const reader = new BinaryReader(buffer);
+    const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
+    if (bytes.byteLength >= 2 && bytes[0] === ServerMessageType.ROOM_PLAYERS_COMPACT) {
+      const players = decodeRoomPlayersCompact(bytes);
+      return {
+        type: ServerMessageType.ROOM_PLAYERS_COMPACT,
+        players,
+      };
+    }
+
+    const reader = new BinaryReader(bytes);
     let type = 0;
     let payloadBytes = null;
 
@@ -499,3 +511,72 @@ export function decodeGhostBlob(rawBytes) {
   }
   return { interval, points }
 }
+
+export function encodePlayerMove(x, y, z, speed, score, level) {
+  const buf = new Uint8Array(16);
+  const dv = new DataView(buf.buffer, buf.byteOffset, 16);
+  dv.setUint8(0, ClientMessageType.PLAYER_MOVE);
+  dv.setInt16(1, Math.round(Math.max(-32768, Math.min(32767, x * 100))), true);
+  dv.setInt16(3, Math.round(Math.max(-32768, Math.min(32767, y * 100))), true);
+  dv.setFloat32(5, z, true);
+  dv.setUint16(9, Math.round(Math.max(0, Math.min(65535, speed * 100))), true);
+  dv.setFloat32(11, score, true);
+  dv.setUint8(15, Math.min(255, Math.max(0, level)));
+  return buf;
+}
+
+export function decodePlayerMove(bytes) {
+  const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  return {
+    x: dv.getInt16(1, true) / 100,
+    y: dv.getInt16(3, true) / 100,
+    z: dv.getFloat32(5, true),
+    speed: dv.getUint16(9, true) / 100,
+    score: dv.getFloat32(11, true),
+    level: dv.getUint8(15),
+  };
+}
+
+export function encodeRoomPlayersCompact(players) {
+  const count = players.length;
+  const totalBytes = 2 + count * 17;
+  const buf = new Uint8Array(totalBytes);
+  const dv = new DataView(buf.buffer, buf.byteOffset, totalBytes);
+  dv.setUint8(0, ServerMessageType.ROOM_PLAYERS_COMPACT);
+  dv.setUint8(1, count);
+  for (let i = 0; i < count; i++) {
+    const off = 2 + i * 17;
+    const p = players[i];
+    dv.setUint8(off, p.playerIndex);
+    dv.setUint8(off + 1, p.alive ? 1 : 0);
+    dv.setInt16(off + 2, Math.round(Math.max(-32768, Math.min(32767, p.x * 100))), true);
+    dv.setInt16(off + 4, Math.round(Math.max(-32768, Math.min(32767, p.y * 100))), true);
+    dv.setFloat32(off + 6, p.z, true);
+    dv.setUint16(off + 10, Math.round(Math.max(0, Math.min(65535, p.speed * 100))), true);
+    dv.setFloat32(off + 12, p.score, true);
+    dv.setUint8(off + 16, Math.min(255, Math.max(0, p.level)));
+  }
+  return buf;
+}
+
+export function decodeRoomPlayersCompact(bytes) {
+  const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const count = dv.getUint8(1);
+  const players = [];
+  for (let i = 0; i < count; i++) {
+    const off = 2 + i * 17;
+    if (off + 17 > bytes.byteLength) break;
+    players.push({
+      playerIndex: dv.getUint8(off),
+      alive: dv.getUint8(off + 1) === 1,
+      x: dv.getInt16(off + 2, true) / 100,
+      y: dv.getInt16(off + 4, true) / 100,
+      z: dv.getFloat32(off + 6, true),
+      speed: dv.getUint16(off + 10, true) / 100,
+      score: dv.getFloat32(off + 12, true),
+      level: dv.getUint8(off + 16),
+    });
+  }
+  return players;
+}
+

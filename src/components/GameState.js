@@ -23,10 +23,12 @@ export default function GameState() {
   const level = useStore(s => s.level)
   const walletAddress = useStore(s => s.walletAddress)
   const username = useStore(s => s.username)
+  const roomCode = useStore(s => s.roomCode)
   const roomStatus = useStore(s => s.roomStatus)
   const roomSeed = useStore(s => s.roomSeed)
 
   const lastTickTimeRef = useRef(0)
+  const lastMoveTickRef = useRef(0)
   const sessionStartedRef = useRef(false)
 
   // Connect to backend on initial load
@@ -96,10 +98,26 @@ export default function GameState() {
       // sets the score counter in the hud
       mutation.score = Math.max(0, Math.abs(ship.current.position.z) - 10)
 
-      // Realtime Telemetry Anti-Cheat Tick (Sent every ~1.0 second)
+      // High-Frequency 25Hz Binary Coordinate Broadcast in Multiplayer Rooms
+      if (gameStarted && !mutation.gameOver && roomCode && roomStatus === 'playing') {
+        const now = state.clock.getElapsedTime()
+        if (now - lastMoveTickRef.current >= 0.04) { // 25 Hz = every 40ms
+          lastMoveTickRef.current = now
+          leaderboardService.sendPlayerMove(
+            ship.current.position.x,
+            ship.current.position.y,
+            ship.current.position.z,
+            mutation.gameSpeed,
+            mutation.score,
+            level
+          )
+        }
+      }
+
+      // Realtime Telemetry Anti-Cheat Tick (Sent every 0.5s)
       if (gameStarted && !mutation.gameOver) {
         const now = state.clock.getElapsedTime()
-        if (now - lastTickTimeRef.current >= 0.25) {
+        if (now - lastTickTimeRef.current >= 0.5) {
           lastTickTimeRef.current = now
           leaderboardService.sendTick(
             mutation.score,

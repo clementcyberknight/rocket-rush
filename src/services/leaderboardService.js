@@ -1,10 +1,14 @@
 import {
   encodeClientMessage,
+  encodePlayerMove,
   decodeServerMessage,
   ClientMessageType,
   ServerMessageType
 } from '../proto/protoCodec'
 import { useStore } from '../state/useStore'
+
+// Shared mutable trajectory cache for 60/120 FPS Three.js GPU dead reckoning without React re-render overhead
+export const remotePlayerStates = new Map()
 
 export function getGuestId() {
   let guestId = localStorage.getItem('rocket_rush_guest_id')
@@ -170,9 +174,75 @@ class LeaderboardService {
             break
           }
 
+          case ServerMessageType.ROOM_PLAYERS_COMPACT: {
+            const players = msg.players || []
+            const roomPlayersList = useStore.getState().roomPlayers || []
+            const now = performance.now()
+
+            for (let i = 0; i < players.length; i++) {
+              const p = players[i]
+              const rosterPlayer = roomPlayersList[p.playerIndex]
+              const pUid = rosterPlayer?.uid || p.uid || `player_${p.playerIndex}`
+
+              let state = remotePlayerStates.get(pUid)
+              if (!state) {
+                state = {
+                  uid: pUid,
+                  username: rosterPlayer?.username || 'PILOT',
+                  alive: p.alive,
+                  x: p.x,
+                  y: p.y,
+                  z: p.z,
+                  speed: p.speed,
+                  score: p.score,
+                  level: p.level,
+                  lastPacketTime: now,
+                  renderX: p.x,
+                  renderY: p.y,
+                  renderZ: p.z,
+                  renderRoll: 0,
+                }
+                remotePlayerStates.set(pUid, state)
+              } else {
+                state.x = p.x
+                state.y = p.y
+                state.z = p.z
+                state.speed = p.speed
+                state.score = p.score
+                state.level = p.level
+                state.alive = p.alive
+                state.lastPacketTime = now
+              }
+            }
+
+            // Sync scores to roomPlayers state for UI ranking at throttled frequency (~5 Hz)
+            if (!this._lastUiSync || now - this._lastUiSync > 200) {
+              this._lastUiSync = now
+              const updatedList = roomPlayersList.map((rp, idx) => {
+                const compact = players.find(cp => cp.playerIndex === idx)
+                if (compact) {
+                  return {
+                    ...rp,
+                    score: compact.score,
+                    alive: compact.alive,
+                    x: compact.x,
+                    y: compact.y,
+                    z: compact.z,
+                    speed: compact.speed,
+                    level: compact.level,
+                  }
+                }
+                return rp
+              })
+              useStore.getState().setRoomPlayers(updatedList)
+            }
+            break
+          }
+
           case ServerMessageType.ROOM_PLAYERS: {
             const existing = useStore.getState().roomPlayers || []
             const existingMap = new Map(existing.map(p => [p.uid, p]))
+            const now = performance.now()
             
             ;(msg.players || []).forEach(p => {
               const old = existingMap.get(p.uid)
@@ -183,6 +253,33 @@ class LeaderboardService {
                 isHost: old?.isHost || false,
                 alive: old?.alive === false ? false : p.alive,
               })
+
+              let state = remotePlayerStates.get(p.uid)
+              if (!state) {
+                remotePlayerStates.set(p.uid, {
+                  uid: p.uid,
+                  username: p.username || 'PILOT',
+                  alive: p.alive,
+                  x: p.x,
+                  y: p.y,
+                  z: p.z,
+                  speed: p.speed || 0,
+                  score: p.score || 0,
+                  level: p.level || 0,
+                  lastPacketTime: now,
+                  renderX: p.x,
+                  renderY: p.y,
+                  renderZ: p.z,
+                  renderRoll: 0,
+                })
+              } else {
+                state.x = p.x
+                state.y = p.y
+                state.z = p.z
+                state.score = p.score
+                state.alive = p.alive
+                state.lastPacketTime = now
+              }
             })
 
             useStore.getState().setRoomPlayers(Array.from(existingMap.values()))
@@ -190,6 +287,7 @@ class LeaderboardService {
           }
 
           case ServerMessageType.ROOM_COUNTDOWN:
+            remotePlayerStates.clear()
             useStore.getState().setRoomStatus("countdown")
             useStore.getState().setGameOver(false)
             useStore.getState().setIsSpectating(false)
@@ -197,6 +295,7 @@ class LeaderboardService {
             break
 
           case ServerMessageType.ROOM_STARTED:
+            remotePlayerStates.clear()
             useStore.getState().setRoomStatus("playing")
             useStore.getState().setGameOver(false)
             useStore.getState().setIsSpectating(false)
@@ -206,6 +305,9 @@ class LeaderboardService {
           case ServerMessageType.ROOM_PLAYER_DIED: {
             const all = useStore.getState().roomPlayers || []
             useStore.getState().setRoomPlayers(all.map(p => p.uid === msg.uid ? { ...p, alive: false } : p))
+            const state = remotePlayerStates.get(msg.uid)
+            if (state) state.alive = false
+
             if (msg.uid === useStore.getState().uid) {
               useStore.getState().setIsSpectating(true)
             }
@@ -419,13 +521,23 @@ class LeaderboardService {
   }
 
   leaveRoom() {
+    remotePlayerStates.clear()
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return
     this.ws.send(encodeClientMessage({ type: ClientMessageType.LEAVE_ROOM }))
   }
 
   startRoom() {
+    remotePlayerStates.clear()
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return
     this.ws.send(encodeClientMessage({ type: ClientMessageType.START_ROOM }))
+  }
+
+  sendPlayerMove(x, y, z, speed, score, level) {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return
+    const bytes = encodePlayerMove(x, y, z, speed, score, level)
+    try {
+      this.ws.send(bytes)
+    } catch {}
   }
 }
 
