@@ -294,21 +294,27 @@ class LeaderboardService {
             break
           }
 
-          case ServerMessageType.ROOM_COUNTDOWN:
+          case ServerMessageType.ROOM_COUNTDOWN: {
             remotePlayerStates.clear()
             useStore.getState().setRoomStatus("countdown")
             useStore.getState().setGameOver(false)
             useStore.getState().setIsSpectating(false)
             useStore.getState().setScore(0)
+            const pl = useStore.getState().roomPlayers || []
+            useStore.getState().setRoomPlayers(pl.map(p => ({ ...p, alive: true, score: 0 })))
             break
+          }
 
-          case ServerMessageType.ROOM_STARTED:
+          case ServerMessageType.ROOM_STARTED: {
             remotePlayerStates.clear()
             useStore.getState().setRoomStatus("playing")
             useStore.getState().setGameOver(false)
             useStore.getState().setIsSpectating(false)
+            const pl = useStore.getState().roomPlayers || []
+            useStore.getState().setRoomPlayers(pl.map(p => ({ ...p, alive: true, score: 0 })))
             useStore.getState().restartGame()
             break
+          }
 
           case ServerMessageType.ROOM_PLAYER_DIED: {
             const all = useStore.getState().roomPlayers || []
