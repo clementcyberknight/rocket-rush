@@ -34,15 +34,14 @@ const GameOverScreen = () => {
     }
   }, [gameOver, isSpectating])
 
+  const returnToMainMenu = useStore(s => s.returnToMainMenu)
+
   const handleRestart = () => {
     restartGame()
   }
 
   const handleMainMenu = () => {
-    useStore.getState().setGameOver(false)
-    useStore.getState().setGameStarted(false)
-    useStore.getState().setIsSpectating(false)
-    useStore.getState().restartGame()
+    returnToMainMenu()
   }
 
   return shown ? (
