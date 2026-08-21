@@ -2,6 +2,7 @@ import { Color } from 'three'
 import { createRef } from 'react'
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
+import { getOrGenerateUsername } from '../util/randomUsername'
 
 
 //test
@@ -44,7 +45,7 @@ const useStore = create(subscribeWithSelector((set, get) => {
 
     // Leaderboard & Wallet state
     walletAddress: null,
-    username: localStorage.getItem('rocket_rush_custom_username') || null,
+    username: getOrGenerateUsername(),
     uid: null,
     sessionId: null,
     ghostPath: null,

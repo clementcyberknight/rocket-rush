@@ -5,6 +5,7 @@ import { useDynamicContext, DynamicWidget } from '@dynamic-labs/sdk-react-core'
 import Loader from './CustomLoader'
 import AnimatedLeaderboard from './AnimatedLeaderboard'
 import MultiplayerMenu from './MultiplayerMenu'
+import { generateRandomUsername, getOrGenerateUsername } from '../../util/randomUsername'
 
 import '../../styles/gameMenu.css'
 
@@ -163,24 +164,25 @@ const Overlay = () => {
             <Loader active={active} progress={progress} />
           ) : (
             <div className="game__center-content">
-              <button onClick={handleStart} className="game__menu-button">{'STA>RT'}</button>
+              <button onClick={handleStart} className="game__menu-btn-start">{'STA>RT'}</button>
+
               <div className="game__menu-controls">
-                <p>CONTROLS</p>
-                <span>← a / d →</span>
+                <p className="game__controls-title">CONTROLS</p>
+                <span className="game__controls-keys">← A / D →</span>
                 <div className="game__sensitivity-container">
                   <span className="game__sensitivity-label">
-                    SENSITIVITY: <strong>{steeringSensitivity.toFixed(1)}x</strong>
+                    SENSITIVITY: <strong>{steeringSensitivity.toFixed(1)}X</strong>
                   </span>
                   <div className="game__sensitivity-presets">
-                    <button onClick={() => setSteeringSensitivity(0.7)} className={`game__sens-btn ${steeringSensitivity === 0.7 ? 'active' : ''}`}>0.7x</button>
-                    <button onClick={() => setSteeringSensitivity(1.0)} className={`game__sens-btn ${steeringSensitivity === 1.0 ? 'active' : ''}`}>1.0x</button>
-                    <button onClick={() => setSteeringSensitivity(1.5)} className={`game__sens-btn ${steeringSensitivity === 1.5 ? 'active' : ''}`}>1.5x PRO</button>
-                    <button onClick={() => setSteeringSensitivity(2.0)} className={`game__sens-btn ${steeringSensitivity === 2.0 ? 'active' : ''}`}>2.0x ULTRA</button>
+                    <button onClick={() => setSteeringSensitivity(0.7)} className={`game__sens-btn ${steeringSensitivity === 0.7 ? 'active' : ''}`}>0.7X</button>
+                    <button onClick={() => setSteeringSensitivity(1.0)} className={`game__sens-btn ${steeringSensitivity === 1.0 ? 'active' : ''}`}>1.0X</button>
+                    <button onClick={() => setSteeringSensitivity(1.5)} className={`game__sens-btn ${steeringSensitivity === 1.5 ? 'active' : ''}`}>1.5X PRO</button>
+                    <button onClick={() => setSteeringSensitivity(2.0)} className={`game__sens-btn ${steeringSensitivity === 2.0 ? 'active' : ''}`}>2.0X ULTRA</button>
                   </div>
                 </div>
               </div>
 
-              <div className="game__username-container">
+              <div className="game__username-section">
                 {usernameMsg && (
                   <div className={`game__username-msg ${usernameUpdateResult?.success ? 'success' : 'error'}`}>
                     {usernameMsg}
@@ -198,7 +200,7 @@ const Overlay = () => {
                           setNameInput(val)
                           checkUsernameDebounced(val)
                         }}
-                        placeholder="CALLSIGN..."
+                        placeholder="USERNAME..."
                         maxLength={16}
                         autoFocus
                       />
@@ -206,7 +208,7 @@ const Overlay = () => {
                         <span className="game__username-checking">...</span>
                       )}
                       {!isChecking && usernameCheckResult && usernameCheckResult.available && (
-                        <span className="game__username-available">Available</span>
+                        <span className="game__username-available">AVAILABLE</span>
                       )}
                       {!isChecking && usernameCheckResult && !usernameCheckResult.available && usernameCheckResult.error && (
                         <span className="game__username-taken">{usernameCheckResult.error}</span>
@@ -214,34 +216,48 @@ const Overlay = () => {
                     </div>
                     <button
                       type="submit"
-                      className="game__username-save-btn"
+                      className="game__text-action-btn game__text-action-save"
                       disabled={!usernameCheckResult?.available || isChecking}
                     >
-                      SAVE 🚀
+                      SAVE
                     </button>
-                    <button type="button" className="game__username-cancel-btn" onClick={() => { setIsEditingName(false); useStore.getState().setUsernameCheckResult(false, null); }}>✕</button>
+                    <button
+                      type="button"
+                      className="game__text-action-btn game__text-action-random"
+                      onClick={() => {
+                        const rand = generateRandomUsername()
+                        setNameInput(rand)
+                        checkUsernameDebounced(rand)
+                      }}
+                      title="Generate Random Username"
+                    >
+                      🎲
+                    </button>
+                    <button type="button" className="game__text-action-btn game__text-action-cancel" onClick={() => { setIsEditingName(false); useStore.getState().setUsernameCheckResult(false, null); }}>✕</button>
                   </form>
                 ) : (
-                  <div className="game__username-display">
-                    <span className="game__callsign-label">CALLSIGN:</span>
-                    <strong className="game__callsign-name">{currentUsername || 'ANONYMOUS'}</strong>
-                    <button onClick={() => { setNameInput(currentUsername || ''); setIsEditingName(true); }} className="game__username-edit-btn">
-                      ✏️ EDIT
+                  <div className="game__username-row">
+                    <span className="game__username-label">USERNAME:</span>
+                    <strong className="game__username-name">{currentUsername || getOrGenerateUsername()}</strong>
+                    <button onClick={() => { setNameInput(currentUsername || ''); setIsEditingName(true); }} className="game__username-edit-text-btn">
+                      [ EDIT ]
                     </button>
                   </div>
                 )}
               </div>
 
-              <button onClick={() => setShowMultiplayer(!showMultiplayer)} className="game__leaderboard-btn" style={{ borderColor: '#00f0ff', color: '#00f0ff' }}>
-                {showMultiplayer ? 'HIDE MULTIPLAYER' : '🎮 PLAY WITH FRIENDS'}
+              <button onClick={() => setShowMultiplayer(!showMultiplayer)} className="game__menu-text-btn game__menu-text-btn--cyan">
+                {showMultiplayer ? '< CLOSE MULTIPLAYER >' : 'PLAY WITH FRIENDS'}
               </button>
 
               {showMultiplayer && (
-                <MultiplayerMenu onClose={() => setShowMultiplayer(false)} />
+                <div className="game__multiplayer-panel">
+                  <MultiplayerMenu onClose={() => setShowMultiplayer(false)} />
+                </div>
               )}
 
-              <button onClick={() => setShowLeaderboard(!showLeaderboard)} className="game__leaderboard-btn" style={{ marginTop: '0.4rem' }}>
-                {showLeaderboard ? 'HIDE LEADERBOARD' : '🏆 WEEKLY LEADERBOARD'}
+              <button onClick={() => setShowLeaderboard(!showLeaderboard)} className="game__menu-text-btn game__menu-text-btn--pink">
+                {showLeaderboard ? '< CLOSE LEADERBOARD >' : 'WEEKLY LEADERBOARD'}
               </button>
 
               {showLeaderboard && (
@@ -249,8 +265,6 @@ const Overlay = () => {
                   <AnimatedLeaderboard limit={20} compact={true} key={`lb-menu-${leaderboardVersion}`} />
                 </div>
               )}
-
-              <span className="game__menu-warning">Photosensitivity warning - Game contains flashing lights</span>
             </div>
           )}
         </div>

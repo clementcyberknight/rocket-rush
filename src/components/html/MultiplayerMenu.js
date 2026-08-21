@@ -34,82 +34,119 @@ export default function MultiplayerMenu({ onClose }) {
     onClose()
   }
 
+  // LOBBY STATE
   if (roomCode && roomStatus === 'lobby') {
     return (
-      <div className="multiplayer__container">
-        <div className="multiplayer__card">
-          <h2 className="multiplayer__title">ROOM LOBBY</h2>
-          <div className="multiplayer__code-box">
-            <span className="multiplayer__code-label">ROOM CODE</span>
-            <span className="multiplayer__code">{roomCode}</span>
+      <div className="multiplayer__container-inner">
+        <div className="multiplayer__header">
+          <h2 className="game__score-title" style={{ fontSize: '1.5rem', margin: 0, color: '#00f0ff', textShadow: '0 0 20px #00f0ff' }}>
+            ROOM LOBBY
+          </h2>
+          <span className="multiplayer__live-badge">
+            <span className="multiplayer__pulse-dot"></span> CODE: <strong>{roomCode}</strong>
+          </span>
+        </div>
+
+        <div className="multiplayer__players-list">
+          <div className="multiplayer__players-title-row">
+            <span>PILOTS IN LOBBY ({roomPlayers.length}/10)</span>
           </div>
-          <div className="multiplayer__players">
-            <h3>PLAYERS ({roomPlayers.length}/10)</h3>
-            {roomPlayers.length === 0 && (
-              <p className="multiplayer__empty">Waiting for players...</p>
-            )}
-            {roomPlayers.map(p => (
-              <div key={p.uid} className="multiplayer__player">
-                <span>{p.username || 'ANONYMOUS'}</span>
+          {roomPlayers.length === 0 ? (
+            <div className="multiplayer__empty">
+              <p className="multiplayer__empty-title">WAITING FOR PILOTS...</p>
+              <p className="multiplayer__empty-sub">Share room code {roomCode} with your friends!</p>
+            </div>
+          ) : (
+            roomPlayers.map((p, idx) => (
+              <div key={p.uid || idx} className="multiplayer__player-item">
+                <span className="multiplayer__player-name">
+                  #{idx + 1} {p.username || 'ANONYMOUS'}
+                </span>
                 {p.isHost && <span className="multiplayer__host-badge">HOST</span>}
               </div>
-            ))}
-          </div>
-          <div className="multiplayer__actions">
-            {isRoomHost && (
-              <button onClick={handleStart} className="multiplayer__btn multiplayer__btn-start">
-                START GAME
-              </button>
-            )}
-            <button onClick={handleLeave} className="multiplayer__btn multiplayer__btn-leave">
-              LEAVE
+            ))
+          )}
+        </div>
+
+        <div className="multiplayer__actions-row">
+          {isRoomHost && (
+            <button onClick={handleStart} className="multiplayer__btn-action multiplayer__btn-start">
+              START GAME 🚀
+            </button>
+          )}
+          <button onClick={handleLeave} className="multiplayer__btn-action multiplayer__btn-leave">
+            LEAVE ROOM
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // COUNTDOWN STATE
+  if (roomCode && roomStatus === 'countdown') {
+    return (
+      <div className="multiplayer__container-inner">
+        <div className="multiplayer__header">
+          <h2 className="game__score-title" style={{ fontSize: '1.5rem', margin: 0, color: '#00f0ff', textShadow: '0 0 20px #00f0ff' }}>
+            LAUNCH SEQUENCE
+          </h2>
+          <span className="multiplayer__live-badge">
+            <span className="multiplayer__pulse-dot"></span> STARTING
+          </span>
+        </div>
+        <div className="multiplayer__empty" style={{ padding: '1.8rem 1rem' }}>
+          <p className="multiplayer__empty-title" style={{ fontSize: '1.3rem' }}>GET READY TO FLY!</p>
+          <p className="multiplayer__empty-sub">Game starting in 3... 2... 1...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // MAIN MULTIPLAYER MENU (CREATE OR JOIN)
+  return (
+    <div className="multiplayer__container-inner">
+      <div className="multiplayer__header">
+        <h2 className="game__score-title" style={{ fontSize: '1.5rem', margin: 0, color: '#00f0ff', textShadow: '0 0 20px #00f0ff' }}>
+          PLAY WITH FRIENDS
+        </h2>
+        <span className="multiplayer__live-badge">
+          <span className="multiplayer__pulse-dot"></span> LIVE LOBBY
+        </span>
+      </div>
+
+      <div className="multiplayer__body">
+        {/* Create Room Box */}
+        <div className="multiplayer__box">
+          <button onClick={handleCreate} className="multiplayer__btn-action multiplayer__btn-create">
+            CREATE PRIVATE ROOM
+          </button>
+          <span className="multiplayer__hint">HOST A MATCH AND INVITE UP TO 10 PILOTS</span>
+        </div>
+
+        <div className="multiplayer__divider">
+          <span>─── OR ENTER ROOM CODE ───</span>
+        </div>
+
+        {/* Join Room Box */}
+        <div className="multiplayer__box">
+          <div className="multiplayer__join-wrap">
+            <input
+              type="text"
+              className="multiplayer__code-input"
+              value={joinCode}
+              onChange={e => setJoinCode(e.target.value.toUpperCase().slice(0, 6))}
+              placeholder="ROOM CODE..."
+              maxLength={6}
+            />
+            <button
+              onClick={handleJoin}
+              className="multiplayer__btn-action multiplayer__btn-join"
+              disabled={joinCode.length < 4}
+            >
+              JOIN
             </button>
           </div>
         </div>
-      </div>
-    )
-  }
-
-  if (roomCode && roomStatus === 'countdown') {
-    return (
-      <div className="multiplayer__container">
-        <div className="multiplayer__card">
-          <h2 className="multiplayer__title">GET READY!</h2>
-          <p className="multiplayer__subtitle">Game starting in 3... 2... 1...</p>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="multiplayer__container">
-      <div className="multiplayer__card">
-        <h2 className="multiplayer__title">PLAY WITH FRIENDS</h2>
-        <div className="multiplayer__section">
-          <button onClick={handleCreate} className="multiplayer__btn multiplayer__btn-create">
-            CREATE ROOM
-          </button>
-          <p className="multiplayer__hint">Create a room and share the code</p>
-        </div>
-        <div className="multiplayer__divider">
-          <span>OR</span>
-        </div>
-        <div className="multiplayer__section">
-          <input
-            type="text"
-            className="multiplayer__input"
-            value={joinCode}
-            onChange={e => setJoinCode(e.target.value.toUpperCase().slice(0, 6))}
-            placeholder="ENTER ROOM CODE"
-            maxLength={6}
-          />
-          <button onClick={handleJoin} className="multiplayer__btn multiplayer__btn-join" disabled={joinCode.length < 4}>
-            JOIN ROOM
-          </button>
-        </div>
-        <button onClick={onClose} className="multiplayer__btn multiplayer__btn-back">
-          BACK
-        </button>
       </div>
     </div>
   )
