@@ -29,6 +29,8 @@ export default function GameState() {
 
   const lastTickTimeRef = useRef(0)
   const lastMoveTickRef = useRef(0)
+  const lastSentXRef = useRef(0)
+  const lastSentSpeedRef = useRef(1.0)
   const sessionStartedRef = useRef(false)
 
   // Connect to backend on initial load
@@ -103,11 +105,25 @@ export default function GameState() {
       // sets the score counter in the hud
       mutation.score = Math.max(0, Math.abs(ship.current.position.z) - 10)
 
-      // High-Frequency 25Hz Binary Coordinate Broadcast in Multiplayer Rooms
+      // Adaptive Ultra-Low Bandwidth Binary Coordinate Broadcast (Sub-10kbps)
       if (gameStarted && !mutation.gameOver && roomCode && roomStatus === 'playing') {
         const now = state.clock.getElapsedTime()
-        if (now - lastMoveTickRef.current >= 0.04) { // 25 Hz = every 40ms
+        const curX = ship.current.position.x
+        const curSpeed = mutation.gameSpeed
+        const deltaX = Math.abs(curX - lastSentXRef.current)
+        const deltaSpeed = Math.abs(curSpeed - lastSentSpeedRef.current)
+        const timeSince = now - lastMoveTickRef.current
+
+        // Dynamic rate adaptation:
+        // Maneuvering (lateral steering / speed shift) -> 20Hz (50ms)
+        // Steady cruising straight -> 6.6Hz heartbeat (150ms)
+        const isManeuvering = deltaX > 0.08 || deltaSpeed > 0.05
+        const interval = isManeuvering ? 0.05 : 0.15
+
+        if (timeSince >= interval) {
           lastMoveTickRef.current = now
+          lastSentXRef.current = curX
+          lastSentSpeedRef.current = curSpeed
           leaderboardService.sendPlayerMove(
             ship.current.position.x,
             ship.current.position.y,

@@ -27,15 +27,15 @@ function OtherShip({ player, nodes, materials }) {
     const targetZ = state ? state.z : (player.z || -10)
     const speed = state ? (state.speed || 1.0) : 1.0
     const now = performance.now()
-    const pktAgeSec = state ? Math.min(0.3, (now - state.lastPacketTime) / 1000) : 0
+    const pktAgeSec = state ? Math.min(0.6, (now - state.lastPacketTime) / 1000) : 0
 
-    // Dead Reckoning: extrapolate forward Z based on speed (1 speed unit = 165 Three.js units/sec)
+    // Velocity Dead Reckoning: predict forward trajectory even during 2G network packet delays
     const extrapolatedZ = targetZ - (speed * 165) * pktAgeSec
 
     // Smooth interpolation with frame-rate independent exponential smoothing
     const cp = currentPos.current
-    const lerpFactorPos = Math.min(1.0, delta * 20.0)
-    const lerpFactorZ = Math.min(1.0, delta * 22.0)
+    const lerpFactorPos = Math.min(1.0, delta * 18.0)
+    const lerpFactorZ = Math.min(1.0, delta * 24.0)
 
     cp.x += (targetX - cp.x) * lerpFactorPos
     cp.y += (targetY - cp.y) * lerpFactorPos
