@@ -192,10 +192,11 @@ class LeaderboardService {
               const rosterPlayer = roomPlayersList[p.playerIndex]
               const pUid = rosterPlayer?.uid || p.uid || `player_${p.playerIndex}`
 
-              let state = remotePlayerStates.get(pUid)
+              let state = remotePlayerStates.get(pUid) || remotePlayerStates.get(p.playerIndex)
               if (!state) {
                 state = {
                   uid: pUid,
+                  playerIndex: p.playerIndex,
                   username: rosterPlayer?.username || 'PILOT',
                   alive: p.alive,
                   x: p.x,
@@ -205,12 +206,9 @@ class LeaderboardService {
                   score: p.score,
                   level: p.level,
                   lastPacketTime: now,
-                  renderX: p.x,
-                  renderY: p.y,
-                  renderZ: p.z,
-                  renderRoll: 0,
                 }
                 remotePlayerStates.set(pUid, state)
+                remotePlayerStates.set(p.playerIndex, state)
               } else {
                 state.x = p.x
                 state.y = p.y
@@ -220,6 +218,8 @@ class LeaderboardService {
                 state.level = p.level
                 state.alive = p.alive
                 state.lastPacketTime = now
+                if (!remotePlayerStates.has(pUid)) remotePlayerStates.set(pUid, state)
+                if (!remotePlayerStates.has(p.playerIndex)) remotePlayerStates.set(p.playerIndex, state)
               }
             }
 
