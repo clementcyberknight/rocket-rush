@@ -49,9 +49,7 @@ class LeaderboardService {
         this.getLeaderboard(20)
 
         const state = useStore.getState()
-        if (state.gameStarted && !state.gameOver) {
-          this.startSession(state.walletAddress, state.username)
-        }
+        this.startSession(state.walletAddress || getGuestId(), state.username)
 
         if (state.roomCode) {
           this.joinRoom(state.roomCode)

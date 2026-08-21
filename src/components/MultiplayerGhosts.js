@@ -36,20 +36,27 @@ function OtherShip({ player, index, nodes, materials }) {
   useFrame((state, delta) => {
     if (!groupRef.current) return
 
-    // Lookup remote state by UID or fallback to playerIndex
-    const pState = remotePlayerStates.get(player.uid) || remotePlayerStates.get(player.playerIndex)
-    const targetX = pState ? pState.x : (player.x || 0)
-    const targetY = pState ? pState.y : (player.y || 3)
-    const targetZ = pState ? pState.z : (player.z || -10)
-    const speed = pState ? (pState.speed || 1.0) : 1.0
+    // Lookup remote state by UID, playerIndex, or username
+    const pState = remotePlayerStates.get(player.uid) ||
+                   remotePlayerStates.get(player.playerIndex) ||
+                   remotePlayerStates.get(player.username)
+
+    const targetX = (pState && !isNaN(pState.x)) ? pState.x : (player.x || 0)
+    const targetY = (pState && !isNaN(pState.y)) ? pState.y : (player.y || 3)
+    const targetZ = (pState && !isNaN(pState.z)) ? pState.z : (player.z || -10)
+    const speed = (pState && !isNaN(pState.speed)) ? pState.speed : 1.0
     const now = performance.now()
     const pktAgeSec = pState ? Math.min(0.6, (now - (pState.lastPacketTime || now)) / 1000) : 0
 
-    // Velocity Dead Reckoning: extrapolate forward Z based on speed
+    // Velocity Dead Reckoning
     const extrapolatedZ = targetZ - (speed * 165) * pktAgeSec
 
-    // High-responsiveness exponential smoothing
     const cp = currentPos.current
+    if (isNaN(cp.x)) cp.x = targetX
+    if (isNaN(cp.y)) cp.y = targetY
+    if (isNaN(cp.z)) cp.z = extrapolatedZ
+
+    // High-responsiveness exponential smoothing
     const lerpPos = Math.min(1.0, delta * 20.0)
     const lerpZ = Math.min(1.0, delta * 26.0)
 
@@ -84,7 +91,7 @@ function OtherShip({ player, index, nodes, materials }) {
       rightWingTrail.current.scale.x = 0.1 + fastSine / 60
     }
 
-    // Point light intensity follow along
+    // Point light follow along
     if (pointLightRef.current) {
       pointLightRef.current.position.set(cp.x, cp.y + 0.5, cp.z)
     }
@@ -174,13 +181,18 @@ function OtherShip({ player, index, nodes, materials }) {
 export default function MultiplayerGhosts() {
   const roomPlayers = useStore(s => s.roomPlayers)
   const uid = useStore(s => s.uid)
+  const isRoomHost = useStore(s => s.isRoomHost)
   const { nodes, materials } = useGLTF(shipModel, dracoDecoderPath)
 
   const others = useMemo(() => {
-    if (!roomPlayers || !uid) return []
-    // Treat undefined as alive (default when entering match)
-    return roomPlayers.filter(p => p.uid !== uid && p.alive !== false)
-  }, [roomPlayers, uid])
+    if (!roomPlayers || roomPlayers.length <= 1) return []
+    const myUid = uid || (isRoomHost ? roomPlayers[0]?.uid : null)
+    return roomPlayers.filter((p, i) => {
+      if (myUid && p.uid === myUid) return false
+      if (!myUid && isRoomHost && i === 0) return false
+      return p.alive !== false
+    })
+  }, [roomPlayers, uid, isRoomHost])
 
   if (!nodes || others.length === 0) return null
 
