@@ -18,7 +18,6 @@ import KeyboardControls from './KeyboardControls'
 import GameState from './GameState'
 import GhostShip from './GhostShip'
 import MultiplayerGhosts from './MultiplayerGhosts'
-import SpectateCamera from './SpectateCamera'
 import GlobalColor from './GlobalColor'
 import Sound from './Sound'
 
@@ -50,7 +49,6 @@ export default function CubeWorld({ color, bgColor }) {
           </Ship>
           <GhostShip />
           <MultiplayerGhosts />
-          <SpectateCamera />
           <Walls />
           <Cubes />
           <CubeTunnel />

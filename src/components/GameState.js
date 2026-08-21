@@ -63,9 +63,8 @@ export default function GameState() {
       sessionStartedRef.current = true
       scoreSubmittedRef.current = false
       leaderboardService.startSession(walletAddress, username)
-      if (roomStatus === 'playing') useStore.getState().setIsSpectating(false)
     }
-  }, [gameStarted, gameOver, walletAddress, username, roomStatus])
+  }, [gameStarted, gameOver, walletAddress, username])
 
   // Handle Game Over Score Submission
   useEffect(() => {
@@ -74,7 +73,13 @@ export default function GameState() {
       sessionStartedRef.current = false
       const finalScore = Math.max(0, mutation.score)
       leaderboardService.submitScore(finalScore, walletAddress, username)
-      if (roomStatus === 'playing') useStore.getState().setIsSpectating(true)
+
+      if (roomStatus === 'playing') {
+        // Return player to the waiting room lobby
+        useStore.getState().setGameStarted(false)
+        useStore.getState().setGameOver(false)
+        useStore.getState().setRoomStatus('lobby')
+      }
     }
   }, [gameOver, walletAddress, username, roomStatus])
 

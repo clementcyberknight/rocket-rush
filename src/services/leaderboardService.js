@@ -323,14 +323,18 @@ class LeaderboardService {
             if (state) state.alive = false
 
             if (msg.uid === useStore.getState().uid) {
-              useStore.getState().setIsSpectating(true)
+              useStore.getState().setGameStarted(false)
+              useStore.getState().setGameOver(false)
+              useStore.getState().setRoomStatus("lobby")
             }
             break
           }
 
           case ServerMessageType.ROOM_GAME_OVER:
             useStore.getState().setRoomRankings(msg.rankings || [])
-            useStore.getState().setRoomStatus("finished")
+            useStore.getState().setGameStarted(false)
+            useStore.getState().setGameOver(false)
+            useStore.getState().setRoomStatus("lobby")
             break
 
           case ServerMessageType.ROOM_RESET_LOBBY:
