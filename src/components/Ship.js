@@ -9,6 +9,7 @@ import noiseTexture from '../textures/noise.png'
 import engineTexture from '../textures/enginetextureflip.png'
 
 import { useStore, mutation } from '../state/useStore'
+import { remotePlayerStates } from '../services/leaderboardService'
 
 const v = new Vector3()
 const dracoDecoderPath = `${process.env.PUBLIC_URL}/draco/`
@@ -129,6 +130,23 @@ function ShipModel(props, { children }) {
     const fastSine = Math.sin(time * 15)
 
     const { left, right } = controlsRef.current || { left: false, right: false }
+
+    if (useStore.getState().isSpectating) {
+      if (ship.current) {
+        ship.current.visible = false
+        const targetUid = useStore.getState().spectateTargetUid
+        const targetState = targetUid ? remotePlayerStates.get(targetUid) : null
+        if (targetState) {
+          ship.current.position.set(targetState.x, targetState.y, targetState.z)
+        }
+      }
+      if (pointLight.current) pointLight.current.visible = false
+      return
+    } else {
+      if (ship.current && !ship.current.visible) {
+        ship.current.visible = true
+      }
+    }
 
     rightWingTrail.current.scale.x = fastSine / 50
     rightWingTrail.current.scale.y = medSine / 50

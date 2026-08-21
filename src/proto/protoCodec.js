@@ -163,6 +163,7 @@ export const ClientMessageType = {
   START_ROOM: 11,
   SPECTATE_TARGET: 12,
   PLAYER_MOVE: 13,
+  RESET_ROOM_LOBBY: 14,
 };
 
 // Server Message Types
@@ -184,6 +185,8 @@ export const ServerMessageType = {
   ROOM_GAME_OVER: 15,
   ROOM_ERROR: 16,
   ROOM_PLAYERS_COMPACT: 17,
+  ROOM_CLOSED: 18,
+  ROOM_RESET_LOBBY: 19,
 };
 
 export function encodeClientMessage(msg) {
@@ -487,6 +490,39 @@ export function decodeServerMessage(buffer) {
         else inner.skip(tag.wireType);
       }
       return { type, message };
+    } else if (type === ServerMessageType.ROOM_CLOSED) {
+      let reason = "";
+      while (inner.hasMore()) {
+        const tag = inner.readTag();
+        if (!tag) break;
+        if (tag.fieldNumber === 1 && tag.wireType === 2) reason = inner.readString();
+        else inner.skip(tag.wireType);
+      }
+      return { type, reason };
+    } else if (type === ServerMessageType.ROOM_RESET_LOBBY) {
+      let code = "", seed = 0;
+      const players = [];
+      while (inner.hasMore()) {
+        const tag = inner.readTag();
+        if (!tag) break;
+        if (tag.fieldNumber === 1 && tag.wireType === 2) code = inner.readString();
+        else if (tag.fieldNumber === 2 && tag.wireType === 0) seed = inner.readVarint();
+        else if (tag.fieldNumber === 3 && tag.wireType === 2) {
+          const itemBytes = inner.readBytes();
+          const ir = new BinaryReader(itemBytes);
+          let uid = "", username = null, isHost = false;
+          while (ir.hasMore()) {
+            const it = ir.readTag();
+            if (!it) break;
+            if (it.fieldNumber === 1 && it.wireType === 2) uid = ir.readString();
+            else if (it.fieldNumber === 2 && it.wireType === 2) username = ir.readString();
+            else if (it.fieldNumber === 3 && it.wireType === 0) isHost = ir.readVarint() === 1;
+            else ir.skip(it.wireType);
+          }
+          players.push({ uid, username, isHost });
+        } else inner.skip(tag.wireType);
+      }
+      return { type, code, seed, players };
     }
     return null;
   } catch (e) {

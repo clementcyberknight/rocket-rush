@@ -114,6 +114,71 @@ const useStore = create(subscribeWithSelector((set, get) => {
         userRank: 0,
         submissionValid: true,
       }))
+    },
+
+    returnToMainMenu: () => {
+      mutation.gameOver = false
+      mutation.score = 0
+      mutation.gameSpeed = 0
+      mutation.desiredSpeed = 0
+      mutation.horizontalVelocity = 0
+      mutation.colorLevel = 0
+      mutation.shouldShiftItems = false
+      mutation.currentLevelLength = 0
+      mutation.globalColor.set(0xff2190)
+
+      set(state => ({
+        score: 0,
+        level: 0,
+        gameOver: false,
+        gameStarted: false,
+        gameSession: state.gameSession + 1,
+        isSpeedingUp: false,
+        controls: { left: false, right: false },
+        userRank: 0,
+        submissionValid: true,
+        roomCode: null,
+        roomPlayers: [],
+        roomSeed: null,
+        isRoomHost: false,
+        roomStatus: null,
+        isSpectating: false,
+        spectateTargetUid: null,
+        roomRankings: null,
+        roomRNG: null,
+      }))
+    },
+
+    resetToLobby: (code, seed, players) => {
+      mutation.gameOver = false
+      mutation.score = 0
+      mutation.gameSpeed = 0
+      mutation.desiredSpeed = 0
+      mutation.horizontalVelocity = 0
+      mutation.colorLevel = 0
+      mutation.shouldShiftItems = false
+      mutation.currentLevelLength = 0
+      mutation.globalColor.set(0xff2190)
+
+      set(state => ({
+        score: 0,
+        level: 0,
+        gameOver: false,
+        gameStarted: false,
+        gameSession: state.gameSession + 1,
+        isSpeedingUp: false,
+        controls: { left: false, right: false },
+        userRank: 0,
+        submissionValid: true,
+        roomCode: code || state.roomCode,
+        roomSeed: seed || state.roomSeed,
+        roomStatus: 'lobby',
+        roomPlayers: players || (state.roomPlayers || []).map(p => ({ ...p, alive: true, score: 0, x: 0, y: 3, z: -10 })),
+        isSpectating: false,
+        spectateTargetUid: null,
+        roomRankings: null,
+        roomRNG: null,
+      }))
     }
   }
 }))

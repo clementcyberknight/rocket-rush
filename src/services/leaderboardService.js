@@ -170,7 +170,15 @@ class LeaderboardService {
 
           case ServerMessageType.ROOM_PLAYER_LEFT: {
             const pl = useStore.getState().roomPlayers || []
-            useStore.getState().setRoomPlayers(pl.filter(x => x.uid !== msg.uid))
+            const remaining = pl.filter(x => x.uid !== msg.uid)
+            useStore.getState().setRoomPlayers(remaining)
+            remotePlayerStates.delete(msg.uid)
+
+            const spectateTargetUid = useStore.getState().spectateTargetUid
+            if (spectateTargetUid === msg.uid) {
+              const alive = remaining.filter(p => p.alive)
+              useStore.getState().setSpectateTargetUid(alive[0]?.uid || null)
+            }
             break
           }
 
@@ -317,6 +325,17 @@ class LeaderboardService {
           case ServerMessageType.ROOM_GAME_OVER:
             useStore.getState().setRoomRankings(msg.rankings || [])
             useStore.getState().setRoomStatus("finished")
+            break
+
+          case ServerMessageType.ROOM_RESET_LOBBY:
+            remotePlayerStates.clear()
+            useStore.getState().resetToLobby(msg.code, msg.seed, msg.players)
+            break
+
+          case ServerMessageType.ROOM_CLOSED:
+            remotePlayerStates.clear()
+            alert(msg.reason || "Room closed. Returning to main menu.")
+            useStore.getState().returnToMainMenu()
             break
 
           case ServerMessageType.ROOM_ERROR:
@@ -522,8 +541,18 @@ class LeaderboardService {
 
   leaveRoom() {
     remotePlayerStates.clear()
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      try {
+        this.ws.send(encodeClientMessage({ type: ClientMessageType.LEAVE_ROOM }))
+      } catch {}
+    }
+    useStore.getState().returnToMainMenu()
+  }
+
+  resetRoomToLobby() {
+    remotePlayerStates.clear()
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return
-    this.ws.send(encodeClientMessage({ type: ClientMessageType.LEAVE_ROOM }))
+    this.ws.send(encodeClientMessage({ type: ClientMessageType.RESET_ROOM_LOBBY }))
   }
 
   startRoom() {
